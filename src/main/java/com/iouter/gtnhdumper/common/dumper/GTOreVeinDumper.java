@@ -38,7 +38,7 @@ public class GTOreVeinDumper extends WikiDumper {
             .values()) {
             String[] heightRange = vein.worldGenHeightRange.split("-");
             list.add(
-                new Object[] { vein.veinName, vein.localizedName, vein.mPrimaryVeinMaterial.getInternalName(),
+                new Object[] { vein.veinName, vein.getLocalizedName(), vein.mPrimaryVeinMaterial.getInternalName(),
                     vein.mSecondaryMaterial.getInternalName(), vein.mBetweenMaterial.getInternalName(),
                     vein.mSporadicMaterial.getInternalName(), vein.size, vein.density, vein.randomWeight,
                     heightRange[0], heightRange[1], vein.abbrDimNames });
