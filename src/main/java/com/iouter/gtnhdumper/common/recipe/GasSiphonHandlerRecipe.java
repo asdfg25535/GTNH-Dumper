@@ -22,9 +22,8 @@ public class GasSiphonHandlerRecipe extends BaseHandlerRecipe {
     @Override
     public List<?> getRecipes(IRecipeHandler baseHandler) {
         List<GasSiphonRecipe> recipes = new ArrayList<>();
-        for (Map.Entry<String, Map<Integer, FluidStack>> entry : GasSiphonRecipes.RECIPES.entrySet()) {
-            for (Map.Entry<Integer, FluidStack> innerEntry : entry.getValue()
-                .entrySet()) {
+        for (Map.Entry<String, GasSiphonRecipes.GasSiphonRecipe> entry : GasSiphonRecipes.RECIPES.entrySet()) {
+            for (Map.Entry<Integer, FluidStack> innerEntry : entry.getValue().depths.entrySet()) {
                 recipes.add(
                     new GasSiphonRecipe().setFluid(innerEntry.getValue())
                         .setPlanet(entry.getKey())
