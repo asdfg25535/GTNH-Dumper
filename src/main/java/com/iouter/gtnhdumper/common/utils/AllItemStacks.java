@@ -3,13 +3,13 @@ package com.iouter.gtnhdumper.common.utils;
 import java.util.ArrayList;
 import java.util.List;
 
-import gregtech.api.items.CircuitComponentFakeItem;
-import gregtech.common.tileentities.machines.multi.nanochip.util.CircuitComponent;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
 import cpw.mods.fml.common.registry.GameData;
+import gregtech.api.items.CircuitComponentFakeItem;
+import gregtech.common.tileentities.machines.multi.nanochip.util.CircuitComponent;
 
 public class AllItemStacks {
 
