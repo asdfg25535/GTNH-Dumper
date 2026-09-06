@@ -442,9 +442,9 @@ public class GTMaterialDumper extends WikiDumper {
         materialMap.put(NAME, name);
         materialMap.put(DEFAULT_NAME, name);
         materialMap.put(LOCALIZED_NAME, m.getLocalizedName());
-        materialMap.put(CHEMICAL_FORMULA, m.vChemicalFormula);
+        materialMap.put(CHEMICAL_FORMULA, m.chemicalFormula);
         // materialMap.put("Durability", String.valueOf(m.vDurability));
-        // materialMap.put("ToolSpeed", String.valueOf(m.vHarvestLevel * 2 + m.vTier));
+        // materialMap.put("ToolSpeed", String.valueOf(m.vHarvestLevel * 2 + m.tier));
         // materialMap.put("ToolQuality", String.valueOf(m.vToolQuality));
         getOrePrefixesMap(orePrefixes -> m.getComponentByPrefix(orePrefixes, 1), materialMap);
         Object obj = materialMap.get(ORE_PREFIXES);
