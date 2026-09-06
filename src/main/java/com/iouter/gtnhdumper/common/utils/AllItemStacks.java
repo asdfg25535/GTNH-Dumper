@@ -3,6 +3,8 @@ package com.iouter.gtnhdumper.common.utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import gregtech.api.items.CircuitComponentFakeItem;
+import gregtech.common.tileentities.machines.multi.nanochip.util.CircuitComponent;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -21,7 +23,13 @@ public class AllItemStacks {
             for (Object temp : GameData.getItemRegistry()) {
                 if (!(temp instanceof Item item)) continue;
                 List<ItemStack> sub = new ArrayList<>();
-                item.getSubItems(item, CreativeTabs.tabAllSearch, sub);
+                if (item == CircuitComponentFakeItem.INSTANCE) {
+                    for (CircuitComponent component : CircuitComponent.VALUES) {
+                        sub.add(component.getFakeStack(1));
+                    }
+                } else {
+                    item.getSubItems(item, CreativeTabs.tabAllSearch, sub);
+                }
                 for (ItemStack itemStack : sub) {
                     if (Utils.isStackInvalid(itemStack)) {
                         continue;
