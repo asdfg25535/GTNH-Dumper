@@ -21,6 +21,7 @@ import com.iouter.gtnhdumper.GTNHDumper;
 import com.iouter.gtnhdumper.common.recipe.AvaExtremeShapedHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.ForestryHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.GTDefaultHandlerRecipe;
+import com.iouter.gtnhdumper.common.recipe.GTOreVeinHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.GasSiphonHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.GeneralHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.MobHandlerInfernalRecipe;
@@ -41,6 +42,7 @@ import codechicken.nei.recipe.IRecipeHandler;
 import codechicken.nei.recipe.TemplateRecipeHandler;
 import fox.spiteful.avaritia.compat.nei.ExtremeShapedRecipeHandler;
 import gregtech.nei.GTNEIDefaultHandler;
+import gtneioreplugin.plugin.gregtech5.PluginGT5VeinStat;
 import gtnhintergalactic.nei.GasSiphonRecipeHandler;
 import gtnhintergalactic.nei.SpacePumpModuleRecipeHandler;
 
@@ -54,6 +56,9 @@ public class RecipesDumper extends DataDumper {
         final String clazz = Utils.getAfterLastDot(recipeHandler.getHandlerId())
             .replace(".", "_");
         if (CommonProxy.isGTLoaded) {
+            if (recipeHandler instanceof PluginGT5VeinStat) {
+                return new GTOreVeinHandlerRecipe(recipeHandler);
+            }
             if (recipeHandler instanceof GasSiphonRecipeHandler) {
                 return new GasSiphonHandlerRecipe(recipeHandler);
             }
