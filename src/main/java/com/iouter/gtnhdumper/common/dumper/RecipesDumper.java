@@ -22,6 +22,8 @@ import com.iouter.gtnhdumper.common.recipe.AvaExtremeShapedHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.ForestryHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.GTDefaultHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.GTOreVeinHandlerRecipe;
+import com.iouter.gtnhdumper.common.recipe.GTSmallOreVeinHandlerRecipe;
+import com.iouter.gtnhdumper.common.recipe.GTUndergroundFluidHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.GasSiphonHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.GeneralHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.MobHandlerInfernalRecipe;
@@ -42,6 +44,8 @@ import codechicken.nei.recipe.IRecipeHandler;
 import codechicken.nei.recipe.TemplateRecipeHandler;
 import fox.spiteful.avaritia.compat.nei.ExtremeShapedRecipeHandler;
 import gregtech.nei.GTNEIDefaultHandler;
+import gtneioreplugin.plugin.gregtech5.PluginGT5SmallOreStat;
+import gtneioreplugin.plugin.gregtech5.PluginGT5UndergroundFluid;
 import gtneioreplugin.plugin.gregtech5.PluginGT5VeinStat;
 import gtnhintergalactic.nei.GasSiphonRecipeHandler;
 import gtnhintergalactic.nei.SpacePumpModuleRecipeHandler;
@@ -58,6 +62,12 @@ public class RecipesDumper extends DataDumper {
         if (CommonProxy.isGTLoaded) {
             if (recipeHandler instanceof PluginGT5VeinStat) {
                 return new GTOreVeinHandlerRecipe(recipeHandler);
+            }
+            if (recipeHandler instanceof PluginGT5SmallOreStat) {
+                return new GTSmallOreVeinHandlerRecipe(recipeHandler);
+            }
+            if (recipeHandler instanceof PluginGT5UndergroundFluid) {
+                return new GTUndergroundFluidHandlerRecipe(recipeHandler);
             }
             if (recipeHandler instanceof GasSiphonRecipeHandler) {
                 return new GasSiphonHandlerRecipe(recipeHandler);
