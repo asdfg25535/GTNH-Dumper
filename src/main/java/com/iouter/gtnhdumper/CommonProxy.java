@@ -23,6 +23,7 @@ public class CommonProxy {
     public static boolean isNEIAddonLoaded = Loader.isModLoaded("NEIAddons");
     public static boolean isBQLoaded = Loader.isModLoaded("betterquesting");
     public static boolean isMobsInfoLoaded = Loader.isModLoaded("mobsinfo");
+    public static boolean isKubaTechLoaded = Loader.isModLoaded("kubatech");
     public static boolean isBR6343Loaded = Loader.isModLoaded("blockrenderer6343");
     public static boolean isWitcheryLoaded = Loader.isModLoaded("witchery");
 
