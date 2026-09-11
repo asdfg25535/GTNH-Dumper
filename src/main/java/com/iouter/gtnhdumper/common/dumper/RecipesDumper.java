@@ -10,6 +10,7 @@ import net.bdew.neiaddons.forestry.BaseBreedingRecipeHandler;
 import net.bdew.neiaddons.forestry.BaseProduceRecipeHandler;
 import net.minecraft.util.ChatComponentTranslation;
 
+import com.emoniph.witchery.integration.NEICauldronRecipeHandler;
 import com.google.common.base.Objects;
 import com.gtnewhorizons.aspectrecipeindex.nei.AlchemyRecipeHandler;
 import com.gtnewhorizons.aspectrecipeindex.nei.AspectCombinationHandler;
@@ -29,6 +30,7 @@ import com.iouter.gtnhdumper.common.recipe.MobHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.ShapedCraftingHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.SpacePumpModuleHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.TCHandlerRecipe;
+import com.iouter.gtnhdumper.common.recipe.WitcheryCauldronHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.base.BaseHandlerRecipe;
 import com.iouter.gtnhdumper.common.utils.Utils;
 import com.kuba6000.mobsinfo.nei.MobHandler;
@@ -97,6 +99,9 @@ public class RecipesDumper extends DataDumper {
             if (recipeHandler instanceof MobHandlerInfernal) {
                 return new MobHandlerInfernalRecipe((MobHandlerInfernal) recipeHandler);
             }
+        }
+        if (CommonProxy.isWitcheryLoaded && recipeHandler instanceof NEICauldronRecipeHandler) {
+            return new WitcheryCauldronHandlerRecipe(recipeHandler);
         }
         if (clazz.contains("Shaped") && !clazz.equals("RecipeHandlerRollingMachineShaped")) {
             return new ShapedCraftingHandlerRecipe(recipeHandler);
