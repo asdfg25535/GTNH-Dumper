@@ -9,10 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
-import net.minecraft.init.Items;
+import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -47,15 +46,13 @@ public final class EECRecipeDumper {
             sortedRecipes.put(String.valueOf(entry.getKey()), entry.getValue());
         }
 
-        for (Object eecRecipe : sortedRecipes.values()) {
+        for (Map.Entry<String, Object> entry : sortedRecipes.entrySet()) {
+            String entityName = entry.getKey();
+            Object eecRecipe = entry.getValue();
             Object mobRecipe = field(eecRecipe, "recipe");
-            ItemStack spawnEgg = getSpawnEgg((Entity) field(mobRecipe, "entity"));
-            if (spawnEgg == null) {
-                continue;
-            }
 
             ArrayList<Object> inputItems = new ArrayList<>();
-            inputItems.add(new RecipeItem(spawnEgg));
+            inputItems.add(new RecipeItem(getPoweredSpawner(entityName)));
             ArrayList<Object> outputItems = new ArrayList<>();
             for (Object drop : (List<?>) field(eecRecipe, "mOutputs")) {
                 ItemStack stack = ((ItemStack) field(drop, "stack")).copy();
@@ -73,6 +70,7 @@ public final class EECRecipeDumper {
                     ((Number) field(eecRecipe, "mEUt")).intValue(),
                     ((Number) field(eecRecipe, "mDuration")).intValue(),
                     ((Number) field(mobRecipe, "maxEntityHealth")).floatValue(),
+                    entityName,
                     getInfernalStatus(
                         (Boolean) field(mobRecipe, "alwaysinfernal"),
                         (Boolean) field(mobRecipe, "infernalityAllowed"))));
@@ -88,12 +86,16 @@ public final class EECRecipeDumper {
         return result;
     }
 
-    private static ItemStack getSpawnEgg(Entity entity) {
-        int entityId = EntityList.getEntityID(entity);
-        if (entityId <= 0) {
-            return null;
+    private static ItemStack getPoweredSpawner(String entityName) {
+        Block poweredSpawner = Block.getBlockFromName("EnderIO:blockPoweredSpawner");
+        if (poweredSpawner == null) {
+            throw new IllegalStateException("Ender IO powered spawner is not registered");
         }
-        return new ItemStack(Items.spawn_egg, 1, entityId);
+        ItemStack stack = new ItemStack(poweredSpawner);
+        stack.stackTagCompound = new NBTTagCompound();
+        stack.stackTagCompound.setBoolean("eio.abstractMachine", true);
+        stack.stackTagCompound.setString("mobType", entityName);
+        return stack;
     }
 
     private static String getInfernalStatus(boolean alwaysInfernal, boolean infernalityAllowed) {
@@ -127,15 +129,17 @@ public final class EECRecipeDumper {
         private final int eut;
         private final int duration;
         private final float health;
+        private final String entityName;
         private final String infernalstatus;
 
         private EECRecipe(ArrayList<Object> inputItems, ArrayList<Object> outputItems, int eut, int duration,
-            float health, String infernalstatus) {
+            float health, String entityName, String infernalstatus) {
             this.inputItems = inputItems;
             this.outputItems = outputItems;
             this.eut = eut;
             this.duration = duration;
             this.health = health;
+            this.entityName = entityName;
             this.infernalstatus = infernalstatus;
         }
     }
