@@ -42,6 +42,9 @@ public final class EECRecipeDumper {
         Map<?, ?> eecRecipes = (Map<?, ?>) field(Class.forName("kubatech.loaders.MobHandlerLoader"), "recipeMap");
         List<EECRecipe> recipes = new ArrayList<>();
         Map<String, Object> sortedRecipes = new TreeMap<>();
+        double playerOnlyModifier = ((Number) field(
+            Class.forName("kubatech.config.Config$MobHandler"),
+            "playerOnlyDropsModifier")).doubleValue();
         for (Map.Entry<?, ?> entry : eecRecipes.entrySet()) {
             sortedRecipes.put(String.valueOf(entry.getKey()), entry.getValue());
         }
@@ -64,11 +67,13 @@ public final class EECRecipeDumper {
                 int chance = ((Number) field(drop, "chance")).intValue();
                 RecipeItem item = new RecipeItem(stack);
                 Object normalChance = getChanceModifier(drop, "NormalChance");
-                if (normalChance == null) {
-                    item.withChance(chance);
-                } else {
-                    item.chance = field(normalChance, "chance");
+                if (normalChance != null) {
+                    chance = (int) (((Number) field(normalChance, "chance")).doubleValue() * 100d);
                 }
+                if ((Boolean) field(drop, "playerOnly")) {
+                    chance = Math.max(1, (int) (chance * playerOnlyModifier));
+                }
+                item.withChance(chance);
                 if (getChanceModifier(drop, "DropsOnlyWithEnchant") != null) {
                     otherItems.add(item);
                 } else {
