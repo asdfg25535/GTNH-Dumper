@@ -54,6 +54,7 @@ public final class EECRecipeDumper {
             ArrayList<Object> inputItems = new ArrayList<>();
             inputItems.add(new RecipeItem(getPoweredSpawner(entityName)));
             ArrayList<Object> outputItems = new ArrayList<>();
+            ArrayList<Object> otherItems = new ArrayList<>();
             for (Object drop : (List<?>) field(eecRecipe, "mOutputs")) {
                 ItemStack stack = ((ItemStack) field(drop, "stack")).copy();
                 Object damages = field(drop, "damages");
@@ -61,12 +62,24 @@ public final class EECRecipeDumper {
                     stack.setItemDamage(0);
                 }
                 int chance = ((Number) field(drop, "chance")).intValue();
-                outputItems.add(new RecipeItem(stack).withChance(chance));
+                RecipeItem item = new RecipeItem(stack);
+                Object normalChance = getChanceModifier(drop, "NormalChance");
+                if (normalChance == null) {
+                    item.withChance(chance);
+                } else {
+                    item.chance = field(normalChance, "chance");
+                }
+                if (getChanceModifier(drop, "DropsOnlyWithEnchant") != null) {
+                    otherItems.add(item);
+                } else {
+                    outputItems.add(item);
+                }
             }
             recipes.add(
                 new EECRecipe(
                     inputItems,
                     outputItems,
+                    otherItems,
                     ((Number) field(eecRecipe, "mEUt")).intValue(),
                     ((Number) field(eecRecipe, "mDuration")).intValue(),
                     ((Number) field(mobRecipe, "maxEntityHealth")).floatValue(),
@@ -98,6 +111,17 @@ public final class EECRecipeDumper {
         return stack;
     }
 
+    private static Object getChanceModifier(Object drop, String modifierName) throws Exception {
+        for (Object modifier : (List<?>) field(drop, "chanceModifiers")) {
+            if (modifier.getClass()
+                .getSimpleName()
+                .equals(modifierName)) {
+                return modifier;
+            }
+        }
+        return null;
+    }
+
     private static String getInfernalStatus(boolean alwaysInfernal, boolean infernalityAllowed) {
         if (alwaysInfernal) {
             return "always";
@@ -125,17 +149,18 @@ public final class EECRecipeDumper {
         private final ArrayList<RecipeFluid> inputFluids = new ArrayList<>();
         private final ArrayList<Object> outputItems;
         private final ArrayList<RecipeFluid> outputFluids = new ArrayList<>();
-        private final ArrayList<Object> otherItems = new ArrayList<>();
+        private final ArrayList<Object> otherItems;
         private final int eut;
         private final int duration;
         private final float health;
         private final String entityName;
         private final String infernalstatus;
 
-        private EECRecipe(ArrayList<Object> inputItems, ArrayList<Object> outputItems, int eut, int duration,
-            float health, String entityName, String infernalstatus) {
+        private EECRecipe(ArrayList<Object> inputItems, ArrayList<Object> outputItems, ArrayList<Object> otherItems,
+            int eut, int duration, float health, String entityName, String infernalstatus) {
             this.inputItems = inputItems;
             this.outputItems = outputItems;
+            this.otherItems = otherItems;
             this.eut = eut;
             this.duration = duration;
             this.health = health;
