@@ -9,10 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
-import net.minecraft.init.Items;
+import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -43,20 +42,22 @@ public final class EECRecipeDumper {
         Map<?, ?> eecRecipes = (Map<?, ?>) field(Class.forName("kubatech.loaders.MobHandlerLoader"), "recipeMap");
         List<EECRecipe> recipes = new ArrayList<>();
         Map<String, Object> sortedRecipes = new TreeMap<>();
+        double playerOnlyModifier = ((Number) field(
+            Class.forName("kubatech.config.Config$MobHandler"),
+            "playerOnlyDropsModifier")).doubleValue();
         for (Map.Entry<?, ?> entry : eecRecipes.entrySet()) {
             sortedRecipes.put(String.valueOf(entry.getKey()), entry.getValue());
         }
 
-        for (Object eecRecipe : sortedRecipes.values()) {
+        for (Map.Entry<String, Object> entry : sortedRecipes.entrySet()) {
+            String entityName = entry.getKey();
+            Object eecRecipe = entry.getValue();
             Object mobRecipe = field(eecRecipe, "recipe");
-            ItemStack spawnEgg = getSpawnEgg((Entity) field(mobRecipe, "entity"));
-            if (spawnEgg == null) {
-                continue;
-            }
 
             ArrayList<Object> inputItems = new ArrayList<>();
-            inputItems.add(new RecipeItem(spawnEgg));
+            inputItems.add(new RecipeItem(getPoweredSpawner(entityName)));
             ArrayList<Object> outputItems = new ArrayList<>();
+            ArrayList<Object> otherItems = new ArrayList<>();
             for (Object drop : (List<?>) field(eecRecipe, "mOutputs")) {
                 ItemStack stack = ((ItemStack) field(drop, "stack")).copy();
                 Object damages = field(drop, "damages");
@@ -64,15 +65,30 @@ public final class EECRecipeDumper {
                     stack.setItemDamage(0);
                 }
                 int chance = ((Number) field(drop, "chance")).intValue();
-                outputItems.add(new RecipeItem(stack).withChance(chance));
+                RecipeItem item = new RecipeItem(stack);
+                Object normalChance = getChanceModifier(drop, "NormalChance");
+                if (normalChance != null) {
+                    chance = (int) (((Number) field(normalChance, "chance")).doubleValue() * 100d);
+                }
+                if ((Boolean) field(drop, "playerOnly")) {
+                    chance = Math.max(1, (int) (chance * playerOnlyModifier));
+                }
+                item.withChance(chance);
+                if (getChanceModifier(drop, "DropsOnlyWithEnchant") != null) {
+                    otherItems.add(item);
+                } else {
+                    outputItems.add(item);
+                }
             }
             recipes.add(
                 new EECRecipe(
                     inputItems,
                     outputItems,
+                    otherItems,
                     ((Number) field(eecRecipe, "mEUt")).intValue(),
                     ((Number) field(eecRecipe, "mDuration")).intValue(),
                     ((Number) field(mobRecipe, "maxEntityHealth")).floatValue(),
+                    entityName,
                     getInfernalStatus(
                         (Boolean) field(mobRecipe, "alwaysinfernal"),
                         (Boolean) field(mobRecipe, "infernalityAllowed"))));
@@ -88,12 +104,27 @@ public final class EECRecipeDumper {
         return result;
     }
 
-    private static ItemStack getSpawnEgg(Entity entity) {
-        int entityId = EntityList.getEntityID(entity);
-        if (entityId <= 0) {
-            return null;
+    private static ItemStack getPoweredSpawner(String entityName) {
+        Block poweredSpawner = Block.getBlockFromName("EnderIO:blockPoweredSpawner");
+        if (poweredSpawner == null) {
+            throw new IllegalStateException("Ender IO powered spawner is not registered");
         }
-        return new ItemStack(Items.spawn_egg, 1, entityId);
+        ItemStack stack = new ItemStack(poweredSpawner);
+        stack.stackTagCompound = new NBTTagCompound();
+        stack.stackTagCompound.setBoolean("eio.abstractMachine", true);
+        stack.stackTagCompound.setString("mobType", entityName);
+        return stack;
+    }
+
+    private static Object getChanceModifier(Object drop, String modifierName) throws Exception {
+        for (Object modifier : (List<?>) field(drop, "chanceModifiers")) {
+            if (modifier.getClass()
+                .getSimpleName()
+                .equals(modifierName)) {
+                return modifier;
+            }
+        }
+        return null;
     }
 
     private static String getInfernalStatus(boolean alwaysInfernal, boolean infernalityAllowed) {
@@ -123,19 +154,22 @@ public final class EECRecipeDumper {
         private final ArrayList<RecipeFluid> inputFluids = new ArrayList<>();
         private final ArrayList<Object> outputItems;
         private final ArrayList<RecipeFluid> outputFluids = new ArrayList<>();
-        private final ArrayList<Object> otherItems = new ArrayList<>();
+        private final ArrayList<Object> otherItems;
         private final int eut;
         private final int duration;
         private final float health;
+        private final String entityName;
         private final String infernalstatus;
 
-        private EECRecipe(ArrayList<Object> inputItems, ArrayList<Object> outputItems, int eut, int duration,
-            float health, String infernalstatus) {
+        private EECRecipe(ArrayList<Object> inputItems, ArrayList<Object> outputItems, ArrayList<Object> otherItems,
+            int eut, int duration, float health, String entityName, String infernalstatus) {
             this.inputItems = inputItems;
             this.outputItems = outputItems;
+            this.otherItems = otherItems;
             this.eut = eut;
             this.duration = duration;
             this.health = health;
+            this.entityName = entityName;
             this.infernalstatus = infernalstatus;
         }
     }
