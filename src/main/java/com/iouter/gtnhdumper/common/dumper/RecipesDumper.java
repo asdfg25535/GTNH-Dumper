@@ -146,6 +146,13 @@ public class RecipesDumper extends DataDumper {
                 GTNHDumper.LOG.error(e);
             }
         }
+        try {
+            EECRecipeDumper.dump();
+            recipesList.add(new String[] { EECRecipeDumper.RECIPE_NAME });
+        } catch (Exception e) {
+            GTNHDumper.info("导出" + EECRecipeDumper.RECIPE_NAME + "时发生错误：" + e.getLocalizedMessage());
+            GTNHDumper.LOG.error(e);
+        }
         return recipesList;
     }
 

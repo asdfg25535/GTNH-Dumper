@@ -3,7 +3,6 @@ package com.iouter.gtnhdumper.common.base;
 import com.iouter.gtnhdumper.CommonProxy;
 import com.iouter.gtnhdumper.GTNHDumper;
 import com.iouter.gtnhdumper.common.dumper.AdvItemPanelDumper;
-import com.iouter.gtnhdumper.common.dumper.EECRecipeDumper;
 import com.iouter.gtnhdumper.common.dumper.FluidsDumper;
 import com.iouter.gtnhdumper.common.dumper.GTMaterialDumper;
 import com.iouter.gtnhdumper.common.dumper.GTNHDimensionDumper;
@@ -31,9 +30,6 @@ public class NEIConfig implements IConfigureNEI {
         API.addOption(new RecipesDumper());
         API.addOption(new OreDictionaryDumper());
         API.addOption(new FluidsDumper());
-        if (CommonProxy.isKubaTechLoaded && CommonProxy.isMobsInfoLoaded) {
-            API.addOption(new EECRecipeDumper());
-        }
         if (CommonProxy.isGTLoaded) {
             API.addOption(new GTMaterialDumper());
             API.addOption(new GTOreVeinDumper());
