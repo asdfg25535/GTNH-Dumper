@@ -20,6 +20,7 @@ import com.gtnewhorizons.aspectrecipeindex.nei.arcaneworkbench.ShapelessArcaneRe
 import com.iouter.gtnhdumper.CommonProxy;
 import com.iouter.gtnhdumper.GTNHDumper;
 import com.iouter.gtnhdumper.common.recipe.AvaExtremeShapedHandlerRecipe;
+import com.iouter.gtnhdumper.common.recipe.CarpenterHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.ForestryHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.GTDefaultHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.GTOreVeinHandlerRecipe;
@@ -44,6 +45,7 @@ import codechicken.nei.recipe.GuiUsageRecipe;
 import codechicken.nei.recipe.HandlerInfo;
 import codechicken.nei.recipe.IRecipeHandler;
 import codechicken.nei.recipe.TemplateRecipeHandler;
+import forestry.factory.recipes.nei.NEIHandlerCarpenter;
 import fox.spiteful.avaritia.compat.nei.ExtremeShapedRecipeHandler;
 import gregtech.nei.GTNEIDefaultHandler;
 import gtneioreplugin.plugin.gregtech5.PluginGT5SmallOreStat;
@@ -95,6 +97,9 @@ public class RecipesDumper extends DataDumper {
             }
         }
         if (CommonProxy.isFRLoaded) {
+            if (recipeHandler instanceof NEIHandlerCarpenter) {
+                return new CarpenterHandlerRecipe(recipeHandler);
+            }
             if (CommonProxy.isNEIAddonLoaded) {
                 if (recipeHandler instanceof BaseBreedingRecipeHandler
                     || recipeHandler instanceof BaseProduceRecipeHandler) {
