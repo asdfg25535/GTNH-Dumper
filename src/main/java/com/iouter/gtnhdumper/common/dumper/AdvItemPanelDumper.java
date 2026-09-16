@@ -13,11 +13,13 @@ import net.minecraft.util.EnumChatFormatting;
 
 import org.lwjgl.input.Keyboard;
 
+import com.google.gson.JsonObject;
 import com.iouter.gtnhdumper.CommonProxy;
 import com.iouter.gtnhdumper.GTNHDumper;
 import com.iouter.gtnhdumper.common.base.WikiDumper;
 import com.iouter.gtnhdumper.common.utils.AllItemStacks;
 import com.iouter.gtnhdumper.common.utils.KeySimulator;
+import com.iouter.gtnhdumper.common.utils.TooltipStats;
 import com.iouter.gtnhdumper.common.utils.Utils;
 
 import codechicken.nei.guihook.GuiContainerManager;
@@ -49,7 +51,7 @@ public class AdvItemPanelDumper extends WikiDumper {
     @Override
     public String[] header() {
         return new String[] { "shortKey", "key", "nbt", "originalName", "translatedName", "tooltips", "tooltipsShift",
-            "tooltipsCtrl", "tooltipsShiftAndCtrl", "mod", "icon", "aspect" };
+            "tooltipsCtrl", "tooltipsShiftAndCtrl", "mod", "icon", "aspect", "tooltipStats" };
     }
 
     @Override
@@ -73,7 +75,8 @@ public class AdvItemPanelDumper extends WikiDumper {
                 .get(modid);
             String nbt = Utils.getItemNBT(stack);
             String modName = mod != null ? mod.getName() : modid;
-            String tooltip = Utils.getTooltip(stack);
+            List<JsonObject> tooltipStats = TooltipStats.get(stack);
+            String tooltip = Utils.getTooltip(stack, tooltipStats);
             String[] tooltips = new String[] { null, null, null };
             KeySimulator.withKeyPressed(() -> {
                 String tooltipShift = Utils.getTooltip(stack);
@@ -122,8 +125,8 @@ public class AdvItemPanelDumper extends WikiDumper {
             list.add(
                 new Object[] { Utils.getItemStackShortKey(stack), Utils.getItemKey(stack), nbt,
                     originalNameMap.get(stack), translatedName, tooltip, tooltips[TOOLTIP_LSHIFT],
-                    tooltips[TOOLTIP_LCONTROL], tooltips[TOOLTIP_LSHIFT_AND_LCONTROL], modName, imageName,
-                    aspectList });
+                    tooltips[TOOLTIP_LCONTROL], tooltips[TOOLTIP_LSHIFT_AND_LCONTROL], modName, imageName, aspectList,
+                    tooltipStats });
         }
 
         return list;
