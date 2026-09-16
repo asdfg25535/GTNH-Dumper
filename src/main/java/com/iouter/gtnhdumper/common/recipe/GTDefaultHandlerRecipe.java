@@ -104,7 +104,7 @@ public class GTDefaultHandlerRecipe extends BaseHandlerRecipe {
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 GTNHDumper.LOG.error(e);
             }
-            return null;
+            return recipes;
         }
         gtRecipes.stream()
             .filter(gtRecipe -> gtRecipe.getRecipeCategory() == category)
