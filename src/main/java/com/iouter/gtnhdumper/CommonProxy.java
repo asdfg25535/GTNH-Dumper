@@ -26,6 +26,7 @@ public class CommonProxy {
     public static boolean isKubaTechLoaded = Loader.isModLoaded("kubatech");
     public static boolean isBR6343Loaded = Loader.isModLoaded("blockrenderer6343");
     public static boolean isWitcheryLoaded = Loader.isModLoaded("witchery");
+    public static boolean isCropsNHLoaded = Loader.isModLoaded("cropsnh");
 
     // preInit "Run before anything else. Read your config, create blocks, items,
     // etc, and register them with the GameRegistry."

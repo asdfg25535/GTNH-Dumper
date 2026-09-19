@@ -12,6 +12,7 @@ import net.minecraft.util.ChatComponentTranslation;
 
 import com.emoniph.witchery.integration.NEICauldronRecipeHandler;
 import com.google.common.base.Objects;
+import com.gtnewhorizon.cropsnh.compatibility.NEI.NEICropsNHCropHandler;
 import com.gtnewhorizons.aspectrecipeindex.nei.AlchemyRecipeHandler;
 import com.gtnewhorizons.aspectrecipeindex.nei.AspectCombinationHandler;
 import com.gtnewhorizons.aspectrecipeindex.nei.InfusionRecipeHandler;
@@ -114,8 +115,8 @@ public class RecipesDumper extends DataDumper {
         if (CommonProxy.isWitcheryLoaded && recipeHandler instanceof NEICauldronRecipeHandler) {
             return new WitcheryCauldronHandlerRecipe(recipeHandler);
         }
-        if (CropsNHHandlerRecipe.supports(recipeHandler)) {
-            return new CropsNHHandlerRecipe(recipeHandler);
+        if (CommonProxy.isCropsNHLoaded && recipeHandler instanceof NEICropsNHCropHandler cropsNHHandler) {
+            return new CropsNHHandlerRecipe(cropsNHHandler);
         }
         if (clazz.contains("Shaped") && !clazz.equals("RecipeHandlerRollingMachineShaped")) {
             return new ShapedCraftingHandlerRecipe(recipeHandler);

@@ -3,10 +3,12 @@ package com.iouter.gtnhdumper.common.recipe;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import net.minecraft.item.ItemStack;
 
+import com.gtnewhorizon.cropsnh.api.ICropCard;
+import com.gtnewhorizon.cropsnh.compatibility.NEI.NEICropsNHCropHandler;
+import com.gtnewhorizon.cropsnh.farming.registries.CropRegistry;
 import com.iouter.gtnhdumper.common.recipe.base.BaseHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.base.BaseRecipe;
 import com.iouter.gtnhdumper.common.utils.RecipeUtil;
@@ -17,29 +19,17 @@ import codechicken.nei.recipe.TemplateRecipeHandler;
 
 public class CropsNHHandlerRecipe extends BaseHandlerRecipe {
 
-    private static final String CROPS_HANDLER_CLASS = "com.gtnewhorizon.cropsnh.compatibility.NEI.NEICropsNHCropHandler";
-
-    public CropsNHHandlerRecipe(IRecipeHandler handler) {
+    public CropsNHHandlerRecipe(NEICropsNHCropHandler handler) {
         super(handler);
-    }
-
-    public static boolean supports(IRecipeHandler handler) {
-        return CROPS_HANDLER_CLASS.equals(
-            handler.getClass()
-                .getName());
     }
 
     @Override
     public List<?> getRecipes(IRecipeHandler handler) {
         List<BaseRecipe> recipes = new ArrayList<>();
-        if (!(handler instanceof TemplateRecipeHandler recipeHandler)) {
+        if (!(handler instanceof NEICropsNHCropHandler recipeHandler)) {
             return null;
         }
-        try {
-            recipeHandler.loadCraftingRecipes(recipeHandler.getOverlayIdentifier(), (Object) null);
-        } catch (Exception ignored) {
-            return null;
-        }
+        recipeHandler.loadCraftingRecipes(recipeHandler.getOverlayIdentifier(), (Object) null);
         for (TemplateRecipeHandler.CachedRecipe recipe : recipeHandler.arecipes) {
             ArrayList<Object> otherItems = getRecipeItems(recipe);
             if (otherItems.isEmpty()) otherItems = null;
@@ -56,14 +46,11 @@ public class CropsNHHandlerRecipe extends BaseHandlerRecipe {
 
     private static ArrayList<Object> getRecipeItems(TemplateRecipeHandler.CachedRecipe recipe) {
         ArrayList<Object> items = new ArrayList<>();
-        Optional<Map<ItemStack, Integer>> dropTable = CropsNHDropTableExtractor.extract(recipe);
-        if (!dropTable.isPresent()) return Utils.getRecipeItems(recipe.getOtherStacks());
-
-        List<Map.Entry<ItemStack, Integer>> drops = new ArrayList<>(
-            dropTable.get()
-                .entrySet());
-        drops.sort((left, right) -> Integer.compare(right.getValue(), left.getValue()));
-        for (Map.Entry<ItemStack, Integer> drop : drops) {
+        ItemStack seed = recipe.getIngredients()
+            .get(0).items[0];
+        ICropCard cropCard = CropRegistry.instance.get(seed);
+        for (Map.Entry<ItemStack, Integer> drop : cropCard.getDropTable()
+            .entrySet()) {
             items.add(RecipeUtil.getRecipeItems(new ItemStack[] { drop.getKey() }, drop.getValue()));
         }
         return items;
