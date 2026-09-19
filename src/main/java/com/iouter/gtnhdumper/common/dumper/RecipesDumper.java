@@ -32,6 +32,7 @@ import com.iouter.gtnhdumper.common.recipe.MobHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.ShapedCraftingHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.SpacePumpModuleHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.TCHandlerRecipe;
+import com.iouter.gtnhdumper.common.recipe.VendingMachineHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.WitcheryCauldronHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.base.BaseHandlerRecipe;
 import com.iouter.gtnhdumper.common.utils.Utils;
@@ -112,6 +113,10 @@ public class RecipesDumper extends DataDumper {
         }
         if (CommonProxy.isWitcheryLoaded && recipeHandler instanceof NEICauldronRecipeHandler) {
             return new WitcheryCauldronHandlerRecipe(recipeHandler);
+        }
+        if (recipeHandler instanceof TemplateRecipeHandler templateHandler
+            && "vendingmachine".equals(templateHandler.getOverlayIdentifier())) {
+            return new VendingMachineHandlerRecipe(recipeHandler);
         }
         if (clazz.contains("Shaped") && !clazz.equals("RecipeHandlerRollingMachineShaped")) {
             return new ShapedCraftingHandlerRecipe(recipeHandler);
