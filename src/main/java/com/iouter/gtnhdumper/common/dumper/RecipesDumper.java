@@ -12,6 +12,7 @@ import net.minecraft.util.ChatComponentTranslation;
 
 import com.emoniph.witchery.integration.NEICauldronRecipeHandler;
 import com.google.common.base.Objects;
+import com.gtnewhorizon.cropsnh.compatibility.NEI.NEICropsNHCropHandler;
 import com.gtnewhorizons.aspectrecipeindex.nei.AlchemyRecipeHandler;
 import com.gtnewhorizons.aspectrecipeindex.nei.AspectCombinationHandler;
 import com.gtnewhorizons.aspectrecipeindex.nei.InfusionRecipeHandler;
@@ -20,6 +21,7 @@ import com.gtnewhorizons.aspectrecipeindex.nei.arcaneworkbench.ShapelessArcaneRe
 import com.iouter.gtnhdumper.CommonProxy;
 import com.iouter.gtnhdumper.GTNHDumper;
 import com.iouter.gtnhdumper.common.recipe.AvaExtremeShapedHandlerRecipe;
+import com.iouter.gtnhdumper.common.recipe.CropsNHHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.CarpenterHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.ForestryHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.GTDefaultHandlerRecipe;
@@ -119,6 +121,8 @@ public class RecipesDumper extends DataDumper {
         if (CommonProxy.isWitcheryLoaded && recipeHandler instanceof NEICauldronRecipeHandler) {
             return new WitcheryCauldronHandlerRecipe(recipeHandler);
         }
+        if (CommonProxy.isCropsNHLoaded && recipeHandler instanceof NEICropsNHCropHandler cropsNHHandler) {
+            return new CropsNHHandlerRecipe(cropsNHHandler);
         if (recipeHandler instanceof TemplateRecipeHandler templateHandler
             && "vendingmachine".equals(templateHandler.getOverlayIdentifier())) {
             return new VendingMachineHandlerRecipe(recipeHandler);
