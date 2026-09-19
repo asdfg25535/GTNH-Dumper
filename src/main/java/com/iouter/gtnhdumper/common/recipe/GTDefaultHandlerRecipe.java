@@ -86,7 +86,6 @@ public class GTDefaultHandlerRecipe extends BaseHandlerRecipe {
                         .add(new RecipeFluid(Materials.Hydrogen.getGas(0)).withAmount(recipe.getHydrogenRequirement()));
                     inputFluids
                         .add(new RecipeFluid(Materials.Helium.getGas(0)).withAmount(recipe.getHeliumRequirement()));
-                    inputFluids.add(new RecipeFluid(Materials.RawStarMatter.getFluid(0)));
                     ArrayList<Object> outputItems = new ArrayList<>();
                     for (ItemStackLong itemStackLong : recipe.getOutputItems()) {
                         outputItems.add(new RecipeItem(itemStackLong.itemStack).withAmount(itemStackLong.stackSize));
