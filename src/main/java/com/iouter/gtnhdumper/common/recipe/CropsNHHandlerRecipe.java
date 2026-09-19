@@ -56,23 +56,15 @@ public class CropsNHHandlerRecipe extends BaseHandlerRecipe {
 
     private static ArrayList<Object> getRecipeItems(TemplateRecipeHandler.CachedRecipe recipe) {
         ArrayList<Object> items = new ArrayList<>();
-        Optional<Map<?, ?>> dropTable = CropsNHDropTableExtractor.extract(recipe);
+        Optional<Map<ItemStack, Integer>> dropTable = CropsNHDropTableExtractor.extract(recipe);
         if (!dropTable.isPresent()) return Utils.getRecipeItems(recipe.getOtherStacks());
 
-        List<Map.Entry<?, ?>> drops = new ArrayList<>();
-        for (Map.Entry<?, ?> drop : dropTable.get()
-            .entrySet()) {
-            if (drop.getKey() instanceof ItemStack && drop.getValue() instanceof Number) {
-                drops.add(drop);
-            }
-        }
-        drops.sort(
-            (left, right) -> Integer
-                .compare(((Number) right.getValue()).intValue(), ((Number) left.getValue()).intValue()));
-        for (Map.Entry<?, ?> drop : drops) {
-            ItemStack stack = (ItemStack) drop.getKey();
-            int chance = ((Number) drop.getValue()).intValue();
-            items.add(RecipeUtil.getRecipeItems(new ItemStack[] { stack }, chance));
+        List<Map.Entry<ItemStack, Integer>> drops = new ArrayList<>(
+            dropTable.get()
+                .entrySet());
+        drops.sort((left, right) -> Integer.compare(right.getValue(), left.getValue()));
+        for (Map.Entry<ItemStack, Integer> drop : drops) {
+            items.add(RecipeUtil.getRecipeItems(new ItemStack[] { drop.getKey() }, drop.getValue()));
         }
         return items;
     }

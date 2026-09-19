@@ -4,55 +4,44 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+
 import org.junit.jupiter.api.Test;
+
+import codechicken.nei.PositionedStack;
 
 class CropsNHDropTableExtractorTest {
 
     @Test
     void extractsOriginalTenThousandthsChanceFromCropDefinition() {
-        Map<String, Integer> dropTable = new LinkedHashMap<>();
-        dropTable.put("argentia", 5000);
+        ItemStack seed = new ItemStack(new Item());
+        ItemStack cropDrop = new ItemStack(new Item());
+        Map<ItemStack, Integer> dropTable = new LinkedHashMap<>();
+        dropTable.put(cropDrop, 5000);
 
-        Optional<Map<?, ?>> extracted = CropsNHDropTableExtractor.extract(new CachedCropRecipe(dropTable));
+        Optional<Map<ItemStack, Integer>> extracted = CropsNHDropTableExtractor
+            .extract(Collections.singletonList(new PositionedStack(seed, 0, 0)), actualSeed -> {
+                assertSame(seed.getItem(), actualSeed.getItem());
+                return dropTable;
+            });
 
         assertSame(dropTable, extracted.get());
         assertEquals(
             5000,
             extracted.get()
-                .get("argentia"));
+                .get(cropDrop));
     }
 
     @Test
-    void rejectsObjectsWithoutCropCardMetadata() {
+    void rejectsRecipesWithoutSeedIngredient() {
         assertFalse(
-            CropsNHDropTableExtractor.extract(new Object())
+            CropsNHDropTableExtractor.extract(Collections.emptyList(), ignored -> Collections.emptyMap())
                 .isPresent());
-    }
-
-    private static final class CachedCropRecipe {
-
-        @SuppressWarnings("unused")
-        private final CropCard cropCard;
-
-        private CachedCropRecipe(Map<String, Integer> dropTable) {
-            this.cropCard = new CropCard(dropTable);
-        }
-    }
-
-    private static final class CropCard {
-
-        private final Map<String, Integer> dropTable;
-
-        private CropCard(Map<String, Integer> dropTable) {
-            this.dropTable = dropTable;
-        }
-
-        public Map<String, Integer> getDropTable() {
-            return dropTable;
-        }
     }
 }
