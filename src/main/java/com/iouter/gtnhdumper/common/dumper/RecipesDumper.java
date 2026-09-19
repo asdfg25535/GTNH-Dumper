@@ -21,8 +21,8 @@ import com.gtnewhorizons.aspectrecipeindex.nei.arcaneworkbench.ShapelessArcaneRe
 import com.iouter.gtnhdumper.CommonProxy;
 import com.iouter.gtnhdumper.GTNHDumper;
 import com.iouter.gtnhdumper.common.recipe.AvaExtremeShapedHandlerRecipe;
-import com.iouter.gtnhdumper.common.recipe.CropsNHHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.CarpenterHandlerRecipe;
+import com.iouter.gtnhdumper.common.recipe.CropsNHHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.ForestryHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.GTDefaultHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.GTOreVeinHandlerRecipe;
