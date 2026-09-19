@@ -22,6 +22,7 @@ import com.iouter.gtnhdumper.CommonProxy;
 import com.iouter.gtnhdumper.GTNHDumper;
 import com.iouter.gtnhdumper.common.recipe.AvaExtremeShapedHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.CropsNHHandlerRecipe;
+import com.iouter.gtnhdumper.common.recipe.CarpenterHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.ForestryHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.GTDefaultHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.GTOreVeinHandlerRecipe;
@@ -34,6 +35,7 @@ import com.iouter.gtnhdumper.common.recipe.MobHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.ShapedCraftingHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.SpacePumpModuleHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.TCHandlerRecipe;
+import com.iouter.gtnhdumper.common.recipe.VendingMachineHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.WitcheryCauldronHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.base.BaseHandlerRecipe;
 import com.iouter.gtnhdumper.common.utils.Utils;
@@ -46,6 +48,7 @@ import codechicken.nei.recipe.GuiUsageRecipe;
 import codechicken.nei.recipe.HandlerInfo;
 import codechicken.nei.recipe.IRecipeHandler;
 import codechicken.nei.recipe.TemplateRecipeHandler;
+import forestry.factory.recipes.nei.NEIHandlerCarpenter;
 import fox.spiteful.avaritia.compat.nei.ExtremeShapedRecipeHandler;
 import gregtech.nei.GTNEIDefaultHandler;
 import gtneioreplugin.plugin.gregtech5.PluginGT5SmallOreStat;
@@ -97,6 +100,9 @@ public class RecipesDumper extends DataDumper {
             }
         }
         if (CommonProxy.isFRLoaded) {
+            if (recipeHandler instanceof NEIHandlerCarpenter) {
+                return new CarpenterHandlerRecipe(recipeHandler);
+            }
             if (CommonProxy.isNEIAddonLoaded) {
                 if (recipeHandler instanceof BaseBreedingRecipeHandler
                     || recipeHandler instanceof BaseProduceRecipeHandler) {
@@ -117,6 +123,9 @@ public class RecipesDumper extends DataDumper {
         }
         if (CommonProxy.isCropsNHLoaded && recipeHandler instanceof NEICropsNHCropHandler cropsNHHandler) {
             return new CropsNHHandlerRecipe(cropsNHHandler);
+        if (recipeHandler instanceof TemplateRecipeHandler templateHandler
+            && "vendingmachine".equals(templateHandler.getOverlayIdentifier())) {
+            return new VendingMachineHandlerRecipe(recipeHandler);
         }
         if (clazz.contains("Shaped") && !clazz.equals("RecipeHandlerRollingMachineShaped")) {
             return new ShapedCraftingHandlerRecipe(recipeHandler);

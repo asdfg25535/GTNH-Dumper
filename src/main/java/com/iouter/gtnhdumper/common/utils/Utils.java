@@ -30,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import com.iouter.gtnhdumper.CommonProxy;
 import com.iouter.gtnhdumper.GTNHDumper;
 import com.iouter.gtnhdumper.common.recipe.base.RecipeItem;
@@ -219,9 +220,13 @@ public class Utils {
     }
 
     public static String getTooltip(ItemStack itemStack) {
+        return getTooltip(itemStack, TooltipStats.get(itemStack));
+    }
+
+    public static String getTooltip(ItemStack itemStack, List<JsonObject> tooltipStats) {
         try {
             List<String> tooltips = itemStack.getTooltip(minecraft.thePlayer, false);
-            return String.join("<br>", tooltips);
+            return TooltipText.format(tooltips, tooltipStats);
         } catch (Exception e) {
             return "ERROR";
         }
