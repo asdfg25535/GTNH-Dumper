@@ -20,6 +20,7 @@ import com.gtnewhorizons.aspectrecipeindex.nei.arcaneworkbench.ShapelessArcaneRe
 import com.iouter.gtnhdumper.CommonProxy;
 import com.iouter.gtnhdumper.GTNHDumper;
 import com.iouter.gtnhdumper.common.recipe.AvaExtremeShapedHandlerRecipe;
+import com.iouter.gtnhdumper.common.recipe.CropsNHHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.ForestryHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.GTDefaultHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.GTOreVeinHandlerRecipe;
@@ -112,6 +113,9 @@ public class RecipesDumper extends DataDumper {
         }
         if (CommonProxy.isWitcheryLoaded && recipeHandler instanceof NEICauldronRecipeHandler) {
             return new WitcheryCauldronHandlerRecipe(recipeHandler);
+        }
+        if (CropsNHHandlerRecipe.supports(recipeHandler)) {
+            return new CropsNHHandlerRecipe(recipeHandler);
         }
         if (clazz.contains("Shaped") && !clazz.equals("RecipeHandlerRollingMachineShaped")) {
             return new ShapedCraftingHandlerRecipe(recipeHandler);
