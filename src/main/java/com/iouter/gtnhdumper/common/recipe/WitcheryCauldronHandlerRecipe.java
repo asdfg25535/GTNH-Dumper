@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.emoniph.witchery.brewing.AltarPower;
 import com.emoniph.witchery.brewing.WitcheryBrewRegistry;
+import com.emoniph.witchery.brewing.action.BrewAction;
 import com.emoniph.witchery.brewing.action.BrewActionRitualRecipe;
 import com.emoniph.witchery.integration.NEICauldronRecipeHandler;
 import com.iouter.gtnhdumper.common.recipe.base.BaseHandlerRecipe;
@@ -39,12 +41,20 @@ public class WitcheryCauldronHandlerRecipe extends BaseHandlerRecipe {
 
                 int altarPower = Arrays.stream(recipe.ingredients)
                     .filter(input -> input != null)
-                    .mapToInt(WitcheryBrewRegistry.INSTANCE::getAltarPower)
+                    .map(WitcheryBrewRegistry.INSTANCE::getActionForItemStack)
+                    .filter(action -> action != null)
+                    .mapToInt(WitcheryCauldronHandlerRecipe::getAltarPower)
                     .sum();
                 recipes.add(new CauldronRecipe(inputItems, outputItems, altarPower));
             }
         }
         return recipes;
+    }
+
+    private static int getAltarPower(BrewAction action) {
+        AltarPower altarPower = new AltarPower(0);
+        action.accumulatePower(altarPower);
+        return altarPower.getPower();
     }
 
     private static class CauldronRecipe extends BaseRecipe {
