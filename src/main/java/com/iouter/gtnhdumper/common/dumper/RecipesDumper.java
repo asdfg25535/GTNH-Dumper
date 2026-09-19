@@ -123,6 +123,7 @@ public class RecipesDumper extends DataDumper {
         }
         if (CommonProxy.isCropsNHLoaded && recipeHandler instanceof NEICropsNHCropHandler cropsNHHandler) {
             return new CropsNHHandlerRecipe(cropsNHHandler);
+        }
         if (recipeHandler instanceof TemplateRecipeHandler templateHandler
             && "vendingmachine".equals(templateHandler.getOverlayIdentifier())) {
             return new VendingMachineHandlerRecipe(recipeHandler);
