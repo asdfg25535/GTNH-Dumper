@@ -1,13 +1,17 @@
 package com.iouter.gtnhdumper.common.recipe;
 
+import static tectech.util.CommonValues.EOH_TIER_FANCY_NAMES;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumChatFormatting;
 
 import com.google.gson.JsonObject;
 import com.gtnewhorizons.modularui.api.drawable.FallbackableUITexture;
@@ -78,8 +82,10 @@ public class GTDefaultHandlerRecipe extends BaseHandlerRecipe {
                     ArrayList<Object> inputItems = new ArrayList<>();
                     inputItems.add(new RecipeItem(planetItem));
                     ArrayList<RecipeFluid> inputFluids = new ArrayList<>();
-                    inputFluids.add(new RecipeFluid(Materials.Hydrogen.getGas(0)));
-                    inputFluids.add(new RecipeFluid(Materials.Helium.getGas(0)));
+                    inputFluids
+                        .add(new RecipeFluid(Materials.Hydrogen.getGas(0)).withAmount(recipe.getHydrogenRequirement()));
+                    inputFluids
+                        .add(new RecipeFluid(Materials.Helium.getGas(0)).withAmount(recipe.getHeliumRequirement()));
                     inputFluids.add(new RecipeFluid(Materials.RawStarMatter.getFluid(0)));
                     ArrayList<Object> outputItems = new ArrayList<>();
                     for (ItemStackLong itemStackLong : recipe.getOutputItems()) {
@@ -89,6 +95,18 @@ public class GTDefaultHandlerRecipe extends BaseHandlerRecipe {
                     for (FluidStackLong fluidStackLong : recipe.getOutputFluids()) {
                         outputFluids.add(new RecipeFluid(fluidStackLong.fluidStack).withAmount(fluidStackLong.amount));
                     }
+                    Map<String, Object> metadata = new LinkedHashMap<>();
+                    metadata.put("spacetimeCasingTierRequired", recipe.getSpacetimeCasingTierRequired());
+                    metadata.put(
+                        "spacetimeCasingTierName",
+                        EnumChatFormatting.getTextWithoutFormattingCodes(
+                            EOH_TIER_FANCY_NAMES[(int) recipe.getSpacetimeCasingTierRequired()]));
+                    // Total EU per recipe, not EU/t. Keep the long values without display rounding.
+                    metadata.put("euOutput", recipe.getEUOutput());
+                    metadata.put("euStartCost", recipe.getEUStartCost());
+                    // Raw ratios: 0.55 means 55% success; 1.5 means 150% energy efficiency.
+                    metadata.put("baseRecipeSuccessChance", recipe.getBaseRecipeSuccessChance());
+                    metadata.put("recipeEnergyEfficiency", recipe.getRecipeEnergyEfficiency());
                     recipes.add(
                         new GTDumpedRecipe(
                             inputItems,
@@ -99,7 +117,7 @@ public class GTDefaultHandlerRecipe extends BaseHandlerRecipe {
                             0,
                             recipe.getRecipeTimeInTicks(),
                             0,
-                            null));
+                            metadata));
                 }
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 GTNHDumper.LOG.error(e);
