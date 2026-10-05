@@ -13,7 +13,7 @@ import com.iouter.gtnhdumper.common.base.ModFilterOption;
 import codechicken.core.CommonUtils;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
-import cpw.mods.fml.common.registry.GameRegistry;
+import cpw.mods.fml.common.registry.GameData;
 
 /** A snapshot of the selected mod; empty input preserves the original full export. */
 public final class ModFilter {
@@ -80,8 +80,14 @@ public final class ModFilter {
     public boolean matchesItem(ItemStack stack) {
         if (!isActive()) return true;
         if (stack == null || stack.getItem() == null) return false;
-        GameRegistry.UniqueIdentifier id = GameRegistry.findUniqueIdentifierFor(stack.getItem());
-        return id != null && matchesMod(id.modId);
+        // Some creative-tab entries (for example GregTech's fake circuit components) use an
+        // Item that is not itself registered. Forge's findUniqueIdentifierFor(Item) throws an
+        // NPE for those entries instead of returning null, aborting the entire filtered dump.
+        // Reading the registry name directly preserves the same ownership information and lets
+        // us skip only the entry whose owner cannot be determined.
+        return matchesOwnedKey(
+            GameData.getItemRegistry()
+                .getNameForObject(stack.getItem()));
     }
 
     public boolean matchesFluid(Fluid fluid) {

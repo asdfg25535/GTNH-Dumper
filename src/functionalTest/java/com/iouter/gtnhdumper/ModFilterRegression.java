@@ -5,6 +5,9 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+
 import com.iouter.gtnhdumper.common.utils.ModFilter;
 
 /** Runs without launching Minecraft; checks source ownership and filter input semantics. */
@@ -42,6 +45,9 @@ public final class ModFilterRegression {
         ModFilter addon = new ModFilter(" EXAMPLE ADDON ", mods);
         check(addon.matchesKey("exampleaddon:item"), "Full display names must resolve to mod IDs");
         check(!addon.matchesKey("gregtech:machine:1234"), "Changing mods must change the selected items");
+        check(
+            !addon.matchesItem(new ItemStack(new Item())),
+            "Unregistered creative-tab items must be skipped without aborting the dump");
         check(
             !addon.matchesOriginalOwner(Arrays.asList("gregtech", "exampleaddon")),
             "A later modifier must not be treated as the original recipe source");
