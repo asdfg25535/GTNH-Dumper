@@ -151,6 +151,9 @@ public class RecipesDumper extends DataDumper {
             HandlerInfo info = GuiRecipeTab.getHandlerInfo(handlerName, handlerId);
             String modID = info != null ? info.getModId() : "Unknown";
             String id = Utils.getAfterLastDot(handlerId);
+            if(java.util.Objects.equals(id, "name") &&handlerId != null){
+                id = Utils.getAfterLastDot(handlerId.substring(0, handlerId.length() - ".name".length()));
+            }
             String clazz = Utils.getAfterLastDot(handlerName);
             String fileName = "dumps/recipes/" + modID + "/" + clazz + "_" + id + ".json";
             fileName = Utils.replacePathIllegalChars(fileName);
