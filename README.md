@@ -12,10 +12,12 @@
 
 筛选结果保存到 `dumps/filtered/<modid>/`，全量导出仍使用 `dumps/`。各个 Mod 的结果互不混合。
 
-- 物品、图标和矿辞成员：按物品注册所属 Mod 筛选，保留所有 metadata/NBT 变体。
+- 物品、图标和矿辞成员：普通物品按注册所属 Mod 筛选，GT 机器按 metadata 对应的
+  MetaTileEntity 实现类所属 Mod 筛选，保留所有 metadata/NBT 变体。
 - 流体：按 Forge 记录的流体注册 Mod 筛选，包括没有对应方块的流体。
-- GT 材料：按导出数据中的材料来源字段筛选；GT 结构按控制器物品的注册 Mod 筛选。
-  附属 Mod 共用 `gregtech` 注册物品时，这些物品和结构仍归 `gregtech`。
+- GT 材料：按导出数据中的材料来源字段筛选；GT 结构沿用控制器物品的上述归属规则。
+  因此附属 Mod 共用 `gregtech:gt.blockmachines` 时，仍可归属到提供具体 MetaTileEntity
+  实现类的 Mod；无法可靠解析实现类归属时回退到物品注册 Mod。
 - 配方：按 **原始配方来源** 筛选，目前使用 `GTRecipe.owners` 的第一条记录。
   后续修改者、配方产物、机器和 NEI 分类的 Mod 都不作为原始来源。
   匹配后保留完整配方，包括其他 Mod 的原料和产物，并导出 `sourceMod` 便于核对。

@@ -14,6 +14,9 @@ import codechicken.core.CommonUtils;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.ModContainer;
 import cpw.mods.fml.common.registry.GameData;
+import gregtech.api.GregTechAPI;
+import gregtech.api.interfaces.metatileentity.IMetaTileEntity;
+import gregtech.common.blocks.ItemMachines;
 
 /** A snapshot of the selected mod; empty input preserves the original full export. */
 public final class ModFilter {
@@ -78,16 +81,25 @@ public final class ModFilter {
     }
 
     public boolean matchesItem(ItemStack stack) {
+        String registryName = stack == null || stack.getItem() == null ? null
+            : GameData.getItemRegistry()
+                .getNameForObject(stack.getItem());
+        return matchesItem(stack, registryName);
+    }
+
+    boolean matchesItem(ItemStack stack, String registryName) {
         if (!isActive()) return true;
         if (stack == null || stack.getItem() == null) return false;
-        // Some creative-tab entries (for example GregTech's fake circuit components) use an
-        // Item that is not itself registered. Forge's findUniqueIdentifierFor(Item) throws an
-        // NPE for those entries instead of returning null, aborting the entire filtered dump.
-        // Reading the registry name directly preserves the same ownership information and lets
-        // us skip only the entry whose owner cannot be determined.
-        return matchesOwnedKey(
-            GameData.getItemRegistry()
-                .getNameForObject(stack.getItem()));
+        String specializedOwner = getGregTechMetaTileEntityOwner(stack);
+        return specializedOwner != null ? matchesMod(specializedOwner) : matchesOwnedKey(registryName);
+    }
+
+    private static String getGregTechMetaTileEntityOwner(ItemStack stack) {
+        if (!(stack.getItem() instanceof ItemMachines)) return null;
+        int meta = stack.getItemDamage();
+        if (meta < 0 || meta >= GregTechAPI.METATILEENTITIES.length) return null;
+        IMetaTileEntity metaTileEntity = GregTechAPI.METATILEENTITIES[meta];
+        return metaTileEntity == null ? null : ModClassOwner.find(metaTileEntity.getClass());
     }
 
     public boolean matchesFluid(Fluid fluid) {

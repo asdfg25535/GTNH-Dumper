@@ -57,7 +57,7 @@ public class AllItemStacks {
         if (!filter.isActive()) return getAllItemStacks();
         List<ItemStack> result = new ArrayList<>();
         for (ItemStack stack : getAllItemStacks()) {
-            if (filter.matchesKey(registryNames.get(stack))) result.add(stack);
+            if (filter.matchesItem(stack, registryNames.get(stack))) result.add(stack);
         }
         return result;
     }
