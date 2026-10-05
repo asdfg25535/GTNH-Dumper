@@ -366,13 +366,14 @@ public class Utils {
         Minecraft minecraft = Minecraft.getMinecraft();
         LanguageManager languageManager = minecraft.getLanguageManager();
         Language currentLanguage = languageManager.getCurrentLanguage();
-        languageManager.setCurrentLanguage(new Language("en_US", "US", "English (United States)", false));
-        languageManager.onResourceManagerReload(minecraft.getResourceManager());
-
-        action.run();
-
-        languageManager.setCurrentLanguage(currentLanguage);
-        languageManager.onResourceManagerReload(minecraft.getResourceManager());
+        try {
+            languageManager.setCurrentLanguage(new Language("en_US", "US", "English (United States)", false));
+            languageManager.onResourceManagerReload(minecraft.getResourceManager());
+            action.run();
+        } finally {
+            languageManager.setCurrentLanguage(currentLanguage);
+            languageManager.onResourceManagerReload(minecraft.getResourceManager());
+        }
     }
 
     // Copy from GregTech

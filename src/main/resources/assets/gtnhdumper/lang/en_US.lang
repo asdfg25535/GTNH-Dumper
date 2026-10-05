@@ -31,3 +31,6 @@ nei.options.tools.dump.gtnhdumper.gtnhdimension.dumped=GTNH Dimension were dumpe
 nei.options.tools.dump.gtnhdumper.gtstructure.dumped=GT Structures were dumped to structures/*.json
 nei.options.tools.dump.gtnhdumper.quest.dumped=Quest were dumped to %s
 nei.options.tools.dump.gtnhdumper.questline.dumped=Questline were dumped to %s
+
+nei.options.tools.dump.gtnhdumper.bees=Bees
+nei.options.tools.dump.gtnhdumper.bee.dumped=Bees were dumped to %s
