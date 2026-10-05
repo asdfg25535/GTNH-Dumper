@@ -65,7 +65,7 @@ public class Transformer {
             src.mEUt,
             src.mDuration,
             src.mSpecialValue,
-            metadata);
+            metadata).withSourceMod(GTDefaultHandlerRecipe.originalOwner(src));
     }
 
     public static ArrayList<Object> getInputItems(GTRecipe gtRecipe) {

@@ -11,14 +11,17 @@ import java.util.Map;
 
 import com.iouter.gtnhdumper.GTNHDumper;
 
-import codechicken.nei.config.DataDumper;
-
-public abstract class WikiDumper extends DataDumper {
+public abstract class WikiDumper extends FilteredDataDumper {
 
     public static String ARRAY_SEPARATOR = ";;;";
 
     public WikiDumper(String name) {
         super(name);
+    }
+
+    @Override
+    protected boolean supportsModFilter() {
+        return false;
     }
 
     private static Map<String, Map<String, Object>> getMapJson(String[] header, Iterable<Object[]> contents,

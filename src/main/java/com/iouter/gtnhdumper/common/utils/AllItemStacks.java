@@ -41,4 +41,14 @@ public class AllItemStacks {
         }
         return allItemStacks;
     }
+
+    public static List<ItemStack> getFilteredItemStacks() {
+        ModFilter filter = ModFilter.current();
+        if (!filter.isActive()) return getAllItemStacks();
+        List<ItemStack> result = new ArrayList<>();
+        for (ItemStack stack : getAllItemStacks()) {
+            if (filter.matchesItem(stack)) result.add(stack);
+        }
+        return result;
+    }
 }

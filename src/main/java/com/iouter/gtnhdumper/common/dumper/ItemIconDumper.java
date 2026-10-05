@@ -7,7 +7,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,6 +37,7 @@ import com.iouter.gtnhdumper.common.base.WikiDumper;
 import com.iouter.gtnhdumper.common.utils.AllItemStacks;
 import com.iouter.gtnhdumper.common.utils.DynamicTexture;
 import com.iouter.gtnhdumper.common.utils.FBOHelper;
+import com.iouter.gtnhdumper.common.utils.ModFilter;
 import com.iouter.gtnhdumper.common.utils.Utils;
 
 import bartworks.system.material.BWMetaGeneratedOres;
@@ -62,6 +62,11 @@ public class ItemIconDumper extends WikiDumper {
     }
 
     @Override
+    protected boolean supportsModFilter() {
+        return true;
+    }
+
+    @Override
     public int getKeyIndex() {
         return 0;
     }
@@ -77,7 +82,7 @@ public class ItemIconDumper extends WikiDumper {
         frameCountMap.clear();
         dynamicSizeMap.clear();
 
-        List<ItemStack> itemStacks = AllItemStacks.getAllItemStacks();
+        List<ItemStack> itemStacks = AllItemStacks.getFilteredItemStacks();
 
         Map<String, String> redirectMap = new LinkedHashMap<>();
         Set<String> itemNameSet = new HashSet<>();
@@ -104,7 +109,10 @@ public class ItemIconDumper extends WikiDumper {
         }
 
         try (CSVPrinter printer = new CSVPrinter(
-            Files.newBufferedWriter(Paths.get("dumps/image_redirect.csv")),
+            Files.newBufferedWriter(
+                ModFilter.current()
+                    .outputFile("image_redirect.csv")
+                    .toPath()),
             CSVFormat.DEFAULT)) {
             for (Map.Entry<String, String> e : redirectMap.entrySet()) {
                 printer.printRecord(e.getKey(), e.getValue());
@@ -123,9 +131,7 @@ public class ItemIconDumper extends WikiDumper {
 
     @Override
     public ChatComponentTranslation dumpMessage(File file) {
-        return new ChatComponentTranslation(
-            "nei.options.tools.dump.gtnhdumper.itemicon.dumped",
-            "dumps/" + file.getName());
+        return new ChatComponentTranslation("nei.options.tools.dump.gtnhdumper.itemicon.dumped", file.getPath());
     }
 
     public static String getIconFileName(ItemStack stack) {
@@ -237,7 +243,10 @@ public class ItemIconDumper extends WikiDumper {
             return;
         }
         BufferedImage image = renderItem(itemStack, fbo, itemRenderer, 1f, null);
-        FBOHelper.saveToFile(new File("dumps/icons/" + getIconFileName(itemStack)), image);
+        FBOHelper.saveToFile(
+            ModFilter.current()
+                .outputFile("icons/" + getIconFileName(itemStack)),
+            image);
         fbo.restoreTexture();
     }
 
@@ -261,9 +270,13 @@ public class ItemIconDumper extends WikiDumper {
         frameCountMap.put(itemStack, image.getWidth() / image.getHeight());
         dynamicSizeMap.put(itemStack, image.getHeight());
         FBOHelper.saveToFile(
-            new File("dumps/icons/" + getIconFileName(itemStack)),
+            ModFilter.current()
+                .outputFile("icons/" + getIconFileName(itemStack)),
             resizeImage(images[0], SINGLE_FRAME_SIZE));
-        FBOHelper.saveToFile(new File("dumps/icons/" + getIconFileName(itemStack, true)), image);
+        FBOHelper.saveToFile(
+            ModFilter.current()
+                .outputFile("icons/" + getIconFileName(itemStack, true)),
+            image);
         dynamicFbo.restoreTexture();
     }
 
