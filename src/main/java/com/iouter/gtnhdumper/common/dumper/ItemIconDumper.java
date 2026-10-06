@@ -7,7 +7,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,7 +26,6 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
-import net.minecraftforge.fluids.FluidStack;
 
 import org.lwjgl.opengl.GL11;
 
@@ -38,6 +36,7 @@ import com.iouter.gtnhdumper.common.base.WikiDumper;
 import com.iouter.gtnhdumper.common.utils.AllItemStacks;
 import com.iouter.gtnhdumper.common.utils.DynamicTexture;
 import com.iouter.gtnhdumper.common.utils.FBOHelper;
+import com.iouter.gtnhdumper.common.utils.ModFilter;
 import com.iouter.gtnhdumper.common.utils.Utils;
 
 import bartworks.system.material.BWMetaGeneratedOres;
@@ -45,8 +44,8 @@ import codechicken.nei.guihook.GuiContainerManager;
 import codechicken.nei.shadow.org.apache.commons.csv.CSVFormat;
 import codechicken.nei.shadow.org.apache.commons.csv.CSVPrinter;
 import cpw.mods.fml.client.FMLClientHandler;
+import cpw.mods.fml.common.registry.GameData;
 import gregtech.common.blocks.GTBlockOre;
-import gregtech.common.items.ItemVolumetricFlask;
 import gtPlusPlus.core.block.base.BlockBaseOre;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
@@ -59,6 +58,11 @@ public class ItemIconDumper extends WikiDumper {
 
     public ItemIconDumper() {
         super("tools.dump.gtnhdumper.itemicon");
+    }
+
+    @Override
+    protected boolean supportsModFilter() {
+        return true;
     }
 
     @Override
@@ -77,13 +81,18 @@ public class ItemIconDumper extends WikiDumper {
         frameCountMap.clear();
         dynamicSizeMap.clear();
 
-        List<ItemStack> itemStacks = AllItemStacks.getAllItemStacks();
+        List<ItemStack> itemStacks = AllItemStacks.getFilteredItemStacks();
 
         Map<String, String> redirectMap = new LinkedHashMap<>();
         Set<String> itemNameSet = new HashSet<>();
+        Set<String> baseIconKeys = new HashSet<>();
 
         for (ItemStack stack : itemStacks) {
             if (Utils.isStackInvalid(stack)) continue;
+            if (usesBaseIcon(stack)) {
+                stack = getBaseIconStack(stack);
+                if (!baseIconKeys.add(Utils.getItemStackShortKey(stack))) continue;
+            }
             prepareRenderItem(stack, RenderItem.getInstance());
             final String translatedName = EnumChatFormatting
                 .getTextWithoutFormattingCodes(GuiContainerManager.itemDisplayNameShort(stack));
@@ -104,7 +113,10 @@ public class ItemIconDumper extends WikiDumper {
         }
 
         try (CSVPrinter printer = new CSVPrinter(
-            Files.newBufferedWriter(Paths.get("dumps/image_redirect.csv")),
+            Files.newBufferedWriter(
+                ModFilter.current()
+                    .outputFile("image_redirect.csv")
+                    .toPath()),
             CSVFormat.DEFAULT)) {
             for (Map.Entry<String, String> e : redirectMap.entrySet()) {
                 printer.printRecord(e.getKey(), e.getValue());
@@ -123,9 +135,7 @@ public class ItemIconDumper extends WikiDumper {
 
     @Override
     public ChatComponentTranslation dumpMessage(File file) {
-        return new ChatComponentTranslation(
-            "nei.options.tools.dump.gtnhdumper.itemicon.dumped",
-            "dumps/" + file.getName());
+        return new ChatComponentTranslation("nei.options.tools.dump.gtnhdumper.itemicon.dumped", file.getPath());
     }
 
     public static String getIconFileName(ItemStack stack) {
@@ -133,7 +143,7 @@ public class ItemIconDumper extends WikiDumper {
     }
 
     public static String getIconFileName(ItemStack stack, boolean isDynamic) {
-        return "icon_" + Utils.replaceHuijiIllegalChars(Utils.getItemStackShortKey(stack))
+        return "icon_" + Utils.replaceHuijiIllegalChars(Utils.getItemStackShortKey(getBaseIconStack(stack)))
             + (isDynamic ? "_dynamic" : "")
             + ".png";
     }
@@ -160,15 +170,25 @@ public class ItemIconDumper extends WikiDumper {
         GTNHDumper.debug("唯一率: " + (100 - (collisionCount * 100.0 / Math.max(1, itemStacks.size()))) + "%");
     }
 
-    private static boolean isValidRender(ItemStack stack) {
-        if (CommonProxy.isGTLoaded && stack.getItem() instanceof ItemVolumetricFlask flask) {
-            FluidStack fs = flask.getFluid(stack);
-            if (fs != null) {
-                return fs.getFluid()
-                    .getIcon(fs) == null;
-            }
-        }
-        return false;
+    private static boolean usesBaseIcon(ItemStack stack) {
+        String registryName = GameData.getItemRegistry()
+            .getNameForObject(stack.getItem());
+        return "gregtech:gt.Volumetric_Flask".equals(registryName)
+            || "gregtech:gt.Volumetric_Flask_8k".equals(registryName)
+            || "gregtech:gt.Volumetric_Flask_32k".equals(registryName)
+            || "gregtech:gt.Volumetric_Flask_Infinite".equals(registryName)
+            || "miscutils:gt.Volumetric_Flask_8k".equals(registryName)
+            || "miscutils:gt.Volumetric_Flask_32k".equals(registryName)
+            || "miscutils:gt.Volumetric_Flask_Infinite".equals(registryName)
+            || "appliedenergistics2:item.ItemFacade".equals(registryName);
+    }
+
+    private static ItemStack getBaseIconStack(ItemStack stack) {
+        if (!usesBaseIcon(stack) || !stack.hasTagCompound()) return stack;
+        // Keep the shared item stacks intact for item, recipe and ore dictionary exports.
+        ItemStack baseStack = stack.copy();
+        baseStack.setTagCompound(null);
+        return baseStack;
     }
 
     public static void prepareRenderItem(ItemStack itemStack, RenderItem itemRenderer) {
@@ -228,16 +248,17 @@ public class ItemIconDumper extends WikiDumper {
     }
 
     public static void renderGeneralItem(ItemStack itemStack, FBOHelper fbo, RenderItem itemRenderer) {
-        if (isValidRender(itemStack)) {
-            return;
-        }
+        itemStack = getBaseIconStack(itemStack);
         DynamicTexture dynamicTexture = new DynamicTexture(itemStack);
         if (!getIconFileName(itemStack).contains("Botania:prismarine") && dynamicTexture.isDynamic()) {
             renderDynamicItem(itemStack, itemRenderer, dynamicTexture);
             return;
         }
         BufferedImage image = renderItem(itemStack, fbo, itemRenderer, 1f, null);
-        FBOHelper.saveToFile(new File("dumps/icons/" + getIconFileName(itemStack)), image);
+        FBOHelper.saveToFile(
+            ModFilter.current()
+                .outputFile("icons/" + getIconFileName(itemStack)),
+            image);
         fbo.restoreTexture();
     }
 
@@ -261,9 +282,13 @@ public class ItemIconDumper extends WikiDumper {
         frameCountMap.put(itemStack, image.getWidth() / image.getHeight());
         dynamicSizeMap.put(itemStack, image.getHeight());
         FBOHelper.saveToFile(
-            new File("dumps/icons/" + getIconFileName(itemStack)),
+            ModFilter.current()
+                .outputFile("icons/" + getIconFileName(itemStack)),
             resizeImage(images[0], SINGLE_FRAME_SIZE));
-        FBOHelper.saveToFile(new File("dumps/icons/" + getIconFileName(itemStack, true)), image);
+        FBOHelper.saveToFile(
+            ModFilter.current()
+                .outputFile("icons/" + getIconFileName(itemStack, true)),
+            image);
         dynamicFbo.restoreTexture();
     }
 

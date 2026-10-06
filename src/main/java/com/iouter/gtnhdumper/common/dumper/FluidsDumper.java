@@ -15,6 +15,7 @@ import net.minecraftforge.fluids.FluidStack;
 
 import com.iouter.gtnhdumper.CommonProxy;
 import com.iouter.gtnhdumper.common.base.WikiDumper;
+import com.iouter.gtnhdumper.common.utils.ModFilter;
 import com.iouter.gtnhdumper.common.utils.Utils;
 
 import gregtech.api.enums.ItemList;
@@ -39,6 +40,11 @@ public class FluidsDumper extends WikiDumper {
 
     public FluidsDumper() {
         super("tools.dump.gtnhdumper.fluid");
+    }
+
+    @Override
+    protected boolean supportsModFilter() {
+        return true;
     }
 
     public static String getFluidName(Fluid aFluid) {
@@ -67,17 +73,19 @@ public class FluidsDumper extends WikiDumper {
     public Iterable<Object[]> dumpObject(int mode) {
         LinkedList<Object[]> list = new LinkedList<>();
         Map<String, Fluid> fluids = FluidRegistry.getRegisteredFluids();
+        ModFilter filter = ModFilter.current();
 
         Map<Fluid, String> originalNameMap = new HashMap<>();
         Utils.getEnglishTranslation(() -> {
             for (Fluid fluid : fluids.values()) {
+                if (!filter.matchesFluid(fluid)) continue;
                 originalNameMap.put(fluid, getFluidName(fluid));
             }
         });
 
         for (String fluidKey : fluids.keySet()) {
             Fluid fluid = fluids.get(fluidKey);
-            if (fluid == null) continue;
+            if (fluid == null || !filter.matchesFluid(fluid)) continue;
             String originalName = originalNameMap.get(fluid);
             String translatedName = getFluidName(fluid);
             int luminosity = fluid.getLuminosity();
@@ -105,8 +113,6 @@ public class FluidsDumper extends WikiDumper {
 
     @Override
     public ChatComponentTranslation dumpMessage(File file) {
-        return new ChatComponentTranslation(
-            "nei.options.tools.dump.gtnhdumper.gtmaterial.fluid",
-            "dumps/" + file.getName());
+        return new ChatComponentTranslation("nei.options.tools.dump.gtnhdumper.gtmaterial.fluid", file.getPath());
     }
 }

@@ -1,4 +1,9 @@
 nei.options.tools.dump.gtnhdumper=GTNH Dumper
+nei.options.tools.dump.gtnhdumper.modFilter=Mod filter
+nei.options.tools.dump.gtnhdumper.modFilter.tip=Mod ID or full name (case-insensitive); blank = all. Recipes use the original registered owner. Output: dumps/filtered/<modid>/.
+nei.options.tools.dump.gtnhdumper.modFilter.invalid=Unknown or ambiguous mod: %s. Enter a loaded mod ID or its full name, or clear the filter.
+nei.options.tools.dump.gtnhdumper.modFilter.unsupported=%s has no reliable mod ownership data. Clear the mod filter to export this data.
+nei.options.tools.dump.gtnhdumper.modFilter.skipped=%s recipe categories have missing original source data; see %s. For GT recipes, enable NEIRecipeOwner and restart if needed.
 
 nei.options.tools.dump.gtnhdumper.advitempanels=Advanced Item Panel
 nei.options.tools.dump.gtnhdumper.itemicons=Item Icons
@@ -28,7 +33,7 @@ nei.options.tools.dump.gtnhdumper.gtorevein.dumped=GT Ore Vein were dumped to %s
 nei.options.tools.dump.gtnhdumper.gtsmallorevein.dumped=GT Small Ore Vein were dumped to %s
 nei.options.tools.dump.gtnhdumper.gtundergroundfluid.dumped=GT Underground Fluid were dumped to %s
 nei.options.tools.dump.gtnhdumper.gtnhdimension.dumped=GTNH Dimension were dumped to %s
-nei.options.tools.dump.gtnhdumper.gtstructure.dumped=GT Structures were dumped to structures/*.json
+nei.options.tools.dump.gtnhdumper.gtstructure.dumped=GT Structures were dumped to %s
 nei.options.tools.dump.gtnhdumper.quest.dumped=Quest were dumped to %s
 nei.options.tools.dump.gtnhdumper.questline.dumped=Questline were dumped to %s
 

@@ -21,17 +21,18 @@ import com.gtnewhorizon.structurelib.alignment.constructable.IConstructable;
 import com.gtnewhorizon.structurelib.structure.IStructureElement;
 import com.gtnewhorizon.structurelib.structure.StructureDefinition;
 import com.iouter.gtnhdumper.GTNHDumper;
+import com.iouter.gtnhdumper.common.base.FilteredDataDumper;
+import com.iouter.gtnhdumper.common.utils.ModFilter;
 import com.iouter.gtnhdumper.common.utils.StructureDumpHelper;
 import com.iouter.gtnhdumper.common.utils.StructureHacks;
 import com.iouter.gtnhdumper.common.utils.Utils;
 
 import blockrenderer6343.client.utils.ConstructableData;
 import codechicken.nei.NEIClientUtils;
-import codechicken.nei.config.DataDumper;
 import gregtech.api.GregTechAPI;
 import gregtech.api.interfaces.metatileentity.IMetaTileEntity;
 
-public class GTStructuresDumper extends DataDumper {
+public class GTStructuresDumper extends FilteredDataDumper {
 
     public GTStructuresDumper() {
         super("tools.dump.gtnhdumper.gtstructure");
@@ -49,13 +50,16 @@ public class GTStructuresDumper extends DataDumper {
 
     @Override
     public void dumpFile() {
+        if (!canDump()) return;
         dumpStructures();
         NEIClientUtils.printChatMessage(dumpMessage(null));
     }
 
     private void dumpStructures() {
+        ModFilter filter = ModFilter.current();
         Arrays.stream(GregTechAPI.METATILEENTITIES)
             .filter(te -> te instanceof IConstructable)
+            .filter(te -> filter.matchesItem(te.getStackForm(1)))
             .forEach(te -> {
                 IConstructable constructable = (IConstructable) te;
                 if (!(constructable.getStructureDefinition() instanceof StructureDefinition<?>structureDefinition)) {
@@ -63,8 +67,7 @@ public class GTStructuresDumper extends DataDumper {
                 }
                 final String simpleName = te.getClass()
                     .getSimpleName();
-                final String name = "dumps/structures/" + simpleName + ".json";
-                File file = new File(name);
+                File file = filter.outputFile("structures/" + simpleName + ".json");
                 File parentDir = file.getParentFile();
                 if (parentDir != null && !parentDir.exists()) {
                     parentDir.mkdirs();
@@ -90,7 +93,11 @@ public class GTStructuresDumper extends DataDumper {
 
     @Override
     public ChatComponentTranslation dumpMessage(File file) {
-        return new ChatComponentTranslation("nei.options.tools.dump.gtnhdumper.gtstructure.dumped");
+        return new ChatComponentTranslation(
+            "nei.options.tools.dump.gtnhdumper.gtstructure.dumped",
+            ModFilter.current()
+                .outputFile("structures")
+                .getPath());
     }
 
     private static class GTStructure {
