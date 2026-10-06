@@ -26,7 +26,6 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
-import net.minecraftforge.fluids.FluidStack;
 
 import org.lwjgl.opengl.GL11;
 
@@ -45,8 +44,8 @@ import codechicken.nei.guihook.GuiContainerManager;
 import codechicken.nei.shadow.org.apache.commons.csv.CSVFormat;
 import codechicken.nei.shadow.org.apache.commons.csv.CSVPrinter;
 import cpw.mods.fml.client.FMLClientHandler;
+import cpw.mods.fml.common.registry.GameData;
 import gregtech.common.blocks.GTBlockOre;
-import gregtech.common.items.ItemVolumetricFlask;
 import gtPlusPlus.core.block.base.BlockBaseOre;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
@@ -86,9 +85,14 @@ public class ItemIconDumper extends WikiDumper {
 
         Map<String, String> redirectMap = new LinkedHashMap<>();
         Set<String> itemNameSet = new HashSet<>();
+        Set<String> baseIconKeys = new HashSet<>();
 
         for (ItemStack stack : itemStacks) {
             if (Utils.isStackInvalid(stack)) continue;
+            if (usesBaseIcon(stack)) {
+                stack = getBaseIconStack(stack);
+                if (!baseIconKeys.add(Utils.getItemStackShortKey(stack))) continue;
+            }
             prepareRenderItem(stack, RenderItem.getInstance());
             final String translatedName = EnumChatFormatting
                 .getTextWithoutFormattingCodes(GuiContainerManager.itemDisplayNameShort(stack));
@@ -139,7 +143,7 @@ public class ItemIconDumper extends WikiDumper {
     }
 
     public static String getIconFileName(ItemStack stack, boolean isDynamic) {
-        return "icon_" + Utils.replaceHuijiIllegalChars(Utils.getItemStackShortKey(stack))
+        return "icon_" + Utils.replaceHuijiIllegalChars(Utils.getItemStackShortKey(getBaseIconStack(stack)))
             + (isDynamic ? "_dynamic" : "")
             + ".png";
     }
@@ -166,15 +170,25 @@ public class ItemIconDumper extends WikiDumper {
         GTNHDumper.debug("唯一率: " + (100 - (collisionCount * 100.0 / Math.max(1, itemStacks.size()))) + "%");
     }
 
-    private static boolean isValidRender(ItemStack stack) {
-        if (CommonProxy.isGTLoaded && stack.getItem() instanceof ItemVolumetricFlask flask) {
-            FluidStack fs = flask.getFluid(stack);
-            if (fs != null) {
-                return fs.getFluid()
-                    .getIcon(fs) == null;
-            }
-        }
-        return false;
+    private static boolean usesBaseIcon(ItemStack stack) {
+        String registryName = GameData.getItemRegistry()
+            .getNameForObject(stack.getItem());
+        return "gregtech:gt.Volumetric_Flask".equals(registryName)
+            || "gregtech:gt.Volumetric_Flask_8k".equals(registryName)
+            || "gregtech:gt.Volumetric_Flask_32k".equals(registryName)
+            || "gregtech:gt.Volumetric_Flask_Infinite".equals(registryName)
+            || "miscutils:gt.Volumetric_Flask_8k".equals(registryName)
+            || "miscutils:gt.Volumetric_Flask_32k".equals(registryName)
+            || "miscutils:gt.Volumetric_Flask_Infinite".equals(registryName)
+            || "appliedenergistics2:item.ItemFacade".equals(registryName);
+    }
+
+    private static ItemStack getBaseIconStack(ItemStack stack) {
+        if (!usesBaseIcon(stack) || !stack.hasTagCompound()) return stack;
+        // Keep the shared item stacks intact for item, recipe and ore dictionary exports.
+        ItemStack baseStack = stack.copy();
+        baseStack.setTagCompound(null);
+        return baseStack;
     }
 
     public static void prepareRenderItem(ItemStack itemStack, RenderItem itemRenderer) {
@@ -234,9 +248,7 @@ public class ItemIconDumper extends WikiDumper {
     }
 
     public static void renderGeneralItem(ItemStack itemStack, FBOHelper fbo, RenderItem itemRenderer) {
-        if (isValidRender(itemStack)) {
-            return;
-        }
+        itemStack = getBaseIconStack(itemStack);
         DynamicTexture dynamicTexture = new DynamicTexture(itemStack);
         if (!getIconFileName(itemStack).contains("Botania:prismarine") && dynamicTexture.isDynamic()) {
             renderDynamicItem(itemStack, itemRenderer, dynamicTexture);
