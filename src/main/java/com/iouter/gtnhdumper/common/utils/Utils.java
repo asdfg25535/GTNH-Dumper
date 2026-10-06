@@ -81,9 +81,9 @@ public class Utils {
         return nbt.toString();
     }
 
-    public static Map<String, Object> getItemMetadata(ItemStack stack) {
+    public static Map<String, Object> getItemAttributes(ItemStack stack) {
         if (stack == null || !CommonProxy.isFRLoaded) return null;
-        return BeeExportData.itemMetadata(stack);
+        return BeeExportData.itemAttributes(stack);
     }
 
     public static String getFluidNBT(FluidStack stack) {

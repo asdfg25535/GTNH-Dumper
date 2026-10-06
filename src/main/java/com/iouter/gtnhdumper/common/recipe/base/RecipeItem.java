@@ -18,7 +18,7 @@ public class RecipeItem {
     public Long amount;
     public Object chance;
     public String nbt;
-    public Map<String, Object> metadata;
+    public Map<String, Object> attributes;
     public List<String> tooltip;
 
     public RecipeItem(String key, long amount) {
@@ -55,15 +55,15 @@ public class RecipeItem {
     }
 
     public RecipeItem withNBT(String nbt) {
-        // Metadata from a previous stack must not describe a replacement NBT string.
-        if (!Objects.equals(this.nbt, nbt)) this.metadata = null;
+        // Attributes from a previous stack must not describe a replacement NBT string.
+        if (!Objects.equals(this.nbt, nbt)) this.attributes = null;
         this.nbt = nbt;
         return this;
     }
 
     public RecipeItem withNBT(ItemStack stack) {
         this.nbt = Utils.getItemNBT(stack);
-        this.metadata = Utils.getItemMetadata(stack);
+        this.attributes = Utils.getItemAttributes(stack);
         return this;
     }
 

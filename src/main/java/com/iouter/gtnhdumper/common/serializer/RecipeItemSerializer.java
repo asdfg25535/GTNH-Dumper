@@ -17,7 +17,7 @@ public class RecipeItemSerializer implements JsonSerializer<RecipeItem> {
         boolean hasOnlyKey = src.amount == null && src.chance == null
             && src.nbt == null
             && src.tooltip == null
-            && src.metadata == null;
+            && src.attributes == null;
 
         if (hasOnlyKey && src.key != null) {
             return new JsonPrimitive(src.key);
@@ -37,8 +37,8 @@ public class RecipeItemSerializer implements JsonSerializer<RecipeItem> {
         if (src.nbt != null) {
             obj.addProperty("nbt", src.nbt);
         }
-        if (src.metadata != null) {
-            obj.add("metadata", context.serialize(src.metadata));
+        if (src.attributes != null) {
+            obj.add("attributes", context.serialize(src.attributes));
         }
         if (src.tooltip != null) {
             obj.addProperty("tooltip", String.join("<br>", src.tooltip));

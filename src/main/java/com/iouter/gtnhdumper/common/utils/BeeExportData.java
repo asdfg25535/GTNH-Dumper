@@ -14,12 +14,12 @@ import forestry.api.apiculture.IBeeRoot;
 import forestry.api.genetics.IAllele;
 import forestry.api.genetics.IChromosome;
 
-/** Exports the displayed names of a bee item's active genes as flat item metadata. */
+/** Exports the displayed names of a bee item's active genes as flat item attributes. */
 public final class BeeExportData {
 
     private BeeExportData() {}
 
-    public static Map<String, Object> itemMetadata(ItemStack stack) {
+    public static Map<String, Object> itemAttributes(ItemStack stack) {
         IBeeRoot root = BeeManager.beeRoot;
         if (stack == null || root == null || !root.isMember(stack)) return null;
         try {
@@ -43,7 +43,7 @@ public final class BeeExportData {
             }
             return result.isEmpty() ? null : result;
         } catch (RuntimeException | LinkageError e) {
-            GTNHDumper.LOG.warn("Cannot extract bee metadata for " + Utils.getItemKey(stack), e);
+            GTNHDumper.LOG.warn("Cannot extract bee attributes for " + Utils.getItemKey(stack), e);
             return null;
         }
     }
