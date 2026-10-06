@@ -25,6 +25,7 @@ public class NEIConfig implements IConfigureNEI {
 
     @Override
     public void loadConfig() {
+        API.addOption(ModFilterOption.INSTANCE);
         API.addOption(new AdvItemPanelDumper());
         API.addOption(new ItemIconDumper());
         API.addOption(new RecipesDumper());

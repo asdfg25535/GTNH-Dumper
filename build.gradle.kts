@@ -75,6 +75,17 @@ tasks.assemble.configure {
     dependsOn(functionalTest.jarTaskName)
 }
 
+val checkModFilter by tasks.registering(JavaExec::class) {
+    group = "verification"
+    description = "Checks mod filter matching and original recipe source semantics without launching Minecraft."
+    classpath(functionalTest.runtimeClasspath, sourceSets.main.get().output, sourceSets.patchedMc.get().output)
+    mainClass.set("com.iouter.gtnhdumper.ModFilterRegression")
+}
+
+tasks.check.configure {
+    dependsOn(checkModFilter)
+}
+
 // Run tests in the default runServer/runClient configurations
 tasks.named<RunMinecraftTask>("runServer").configure {
     dependsOn(functionalTest.jarTaskName)

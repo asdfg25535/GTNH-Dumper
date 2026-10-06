@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
@@ -19,10 +21,12 @@ import com.iouter.gtnhdumper.GTNHDumper;
 import com.iouter.gtnhdumper.common.recipe.base.BaseHandlerRecipe;
 import com.iouter.gtnhdumper.common.recipe.base.RecipeFluid;
 import com.iouter.gtnhdumper.common.recipe.base.RecipeItem;
+import com.iouter.gtnhdumper.common.utils.ModFilter;
 import com.iouter.gtnhdumper.common.utils.Transformer;
 import com.iouter.gtnhdumper.common.utils.Utils;
 
 import codechicken.nei.recipe.IRecipeHandler;
+import cpw.mods.fml.common.ModContainer;
 import gregtech.api.enums.Materials;
 import gregtech.api.recipe.BasicUIProperties;
 import gregtech.api.recipe.RecipeCategory;
@@ -50,6 +54,21 @@ public class GTDefaultHandlerRecipe extends BaseHandlerRecipe {
         }
         RecipeMap<?> recipeMap = handler.getRecipeMap();
 
+        if (ModFilter.current()
+            .isActive()) {
+            RecipeCategory category = getRecipeCategory(handler);
+            long unknown = recipeMap.getBackend()
+                .getAllRecipes()
+                .stream()
+                .filter(recipe -> recipe.getRecipeCategory() == category && !recipe.mHidden)
+                .filter(recipe -> originalOwner(recipe) == null)
+                .count();
+            json.addProperty("recipesWithoutSource", unknown);
+            if (recipeMap.getFrontend() instanceof EyeOfHarmonyFrontend) {
+                json.addProperty("sourceFilterUnsupported", true);
+            }
+        }
+
         json.addProperty("progressBar", Utils.getAfterLastChar(getProgressBar(getUIProperties(handler)), '/'));
 
         int amperage = recipeMap.getAmperage();
@@ -66,7 +85,10 @@ public class GTDefaultHandlerRecipe extends BaseHandlerRecipe {
         RecipeMap<?> recipeMap = handler.getRecipeMap();
         RecipeMapBackend recipeMapBackend = recipeMap.getBackend();
         Collection<GTRecipe> gtRecipes = recipeMapBackend.getAllRecipes();
+        ModFilter filter = ModFilter.current();
         if (recipeMap.getFrontend() instanceof EyeOfHarmonyFrontend) {
+            // This custom storage does not retain GTRecipe's owner history.
+            if (filter.isActive()) return recipes;
             try {
                 EyeOfHarmonyRecipeStorage storage = TecTech.eyeOfHarmonyRecipeStorage;
                 Class<?> clazz = EyeOfHarmonyRecipeStorage.class;
@@ -125,9 +147,22 @@ public class GTDefaultHandlerRecipe extends BaseHandlerRecipe {
         }
         gtRecipes.stream()
             .filter(gtRecipe -> gtRecipe.getRecipeCategory() == category)
+            .filter(
+                gtRecipe -> !filter.isActive() || filter.matchesOriginalOwner(
+                    gtRecipe.owners == null ? null
+                        : gtRecipe.owners.stream()
+                            .map(owner -> owner == null ? null : owner.getModId())
+                            .collect(Collectors.toList())))
             .map(Transformer::transformGTRecipe)
+            .filter(Objects::nonNull)
             .forEach(recipes::add);
         return recipes;
+    }
+
+    public static String originalOwner(GTRecipe recipe) {
+        if (recipe.owners == null || recipe.owners.isEmpty()) return null;
+        ModContainer owner = recipe.owners.get(0);
+        return owner == null ? null : owner.getModId();
     }
 
     public static BasicUIProperties getUIProperties(GTNEIDefaultHandler handler) {
@@ -190,6 +225,12 @@ public class GTDefaultHandlerRecipe extends BaseHandlerRecipe {
         private final Long duration;
         private Integer specialValue;
         private final Map<String, Object> metadata;
+        private String sourceMod;
+
+        public GTDumpedRecipe withSourceMod(String sourceMod) {
+            this.sourceMod = sourceMod;
+            return this;
+        }
 
         public GTDumpedRecipe(ArrayList<Object> inputItems, ArrayList<RecipeFluid> inputFluids,
             ArrayList<Object> outputItems, ArrayList<RecipeFluid> outputFluids, ArrayList<Object> otherItems, int eut,

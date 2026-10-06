@@ -20,6 +20,7 @@ import org.apache.commons.lang3.text.WordUtils;
 
 import com.iouter.gtnhdumper.common.base.WikiDumper;
 import com.iouter.gtnhdumper.common.recipe.GTDefaultHandlerRecipe;
+import com.iouter.gtnhdumper.common.utils.ModFilter;
 import com.iouter.gtnhdumper.common.utils.Transformer;
 import com.iouter.gtnhdumper.common.utils.Utils;
 
@@ -558,6 +559,7 @@ public class GTMaterialDumper extends WikiDumper {
 
     @Override
     public Iterable<Object[]> dumpObject(int mode) {
+        ModFilter filter = ModFilter.current();
         Map<String, Map<String, Object>> totalMap = new LinkedHashMap<>();
         // bartworks
         for (Werkstoff m : Werkstoff.werkstoffHashSet) {
@@ -620,6 +622,10 @@ public class GTMaterialDumper extends WikiDumper {
         // }
         return totalMap.values()
             .stream()
+            .filter(
+                material -> !filter.isActive()
+                    || material.get(MOD) instanceof String owners && Arrays.stream(owners.split(ARRAY_SEPARATOR))
+                        .anyMatch(filter::matchesMaterialOwner))
             .map(
                 innerMap -> Arrays.stream(header())
                     .map(key -> innerMap.getOrDefault(key, null))
@@ -628,9 +634,12 @@ public class GTMaterialDumper extends WikiDumper {
     }
 
     @Override
+    protected boolean supportsModFilter() {
+        return true;
+    }
+
+    @Override
     public ChatComponentTranslation dumpMessage(File file) {
-        return new ChatComponentTranslation(
-            "nei.options.tools.dump.gtnhdumper.gtmaterial.dumped",
-            "dumps/" + file.getName());
+        return new ChatComponentTranslation("nei.options.tools.dump.gtnhdumper.gtmaterial.dumped", file.getPath());
     }
 }

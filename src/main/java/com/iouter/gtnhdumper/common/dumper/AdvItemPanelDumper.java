@@ -39,6 +39,11 @@ public class AdvItemPanelDumper extends WikiDumper {
     }
 
     @Override
+    protected boolean supportsModFilter() {
+        return true;
+    }
+
+    @Override
     public int getKeyIndex() {
         return 0;
     }
@@ -58,7 +63,7 @@ public class AdvItemPanelDumper extends WikiDumper {
     public Iterable<Object[]> dumpObject(int mode) {
         LinkedList<Object[]> list = new LinkedList<>();
 
-        List<ItemStack> itemStacks = AllItemStacks.getAllItemStacks();
+        List<ItemStack> itemStacks = AllItemStacks.getFilteredItemStacks();
         Map<ItemStack, String> originalNameMap = getOriginalNameMap(itemStacks);
         for (ItemStack stack : itemStacks) {
             if (Utils.isStackInvalid(stack)) continue;
@@ -134,9 +139,7 @@ public class AdvItemPanelDumper extends WikiDumper {
 
     @Override
     public ChatComponentTranslation dumpMessage(File file) {
-        return new ChatComponentTranslation(
-            "nei.options.tools.dump.gtnhdumper.advitempanel.dumped",
-            "dumps/" + file.getName());
+        return new ChatComponentTranslation("nei.options.tools.dump.gtnhdumper.advitempanel.dumped", file.getPath());
     }
 
     private static Map<ItemStack, String> getOriginalNameMap(List<ItemStack> itemStacks) {
