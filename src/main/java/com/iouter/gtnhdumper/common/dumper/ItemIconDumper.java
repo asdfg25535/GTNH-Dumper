@@ -176,8 +176,10 @@ public class ItemIconDumper extends WikiDumper {
         return "gregtech:gt.Volumetric_Flask".equals(registryName)
             || "gregtech:gt.Volumetric_Flask_8k".equals(registryName)
             || "gregtech:gt.Volumetric_Flask_32k".equals(registryName)
+            || "gregtech:gt.Volumetric_Flask_Infinite".equals(registryName)
             || "miscutils:gt.Volumetric_Flask_8k".equals(registryName)
             || "miscutils:gt.Volumetric_Flask_32k".equals(registryName)
+            || "miscutils:gt.Volumetric_Flask_Infinite".equals(registryName)
             || "appliedenergistics2:item.ItemFacade".equals(registryName);
     }
 
