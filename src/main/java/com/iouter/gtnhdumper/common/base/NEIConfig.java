@@ -3,7 +3,6 @@ package com.iouter.gtnhdumper.common.base;
 import com.iouter.gtnhdumper.CommonProxy;
 import com.iouter.gtnhdumper.GTNHDumper;
 import com.iouter.gtnhdumper.common.dumper.AdvItemPanelDumper;
-import com.iouter.gtnhdumper.common.dumper.BeeDumper;
 import com.iouter.gtnhdumper.common.dumper.FluidsDumper;
 import com.iouter.gtnhdumper.common.dumper.GTMaterialDumper;
 import com.iouter.gtnhdumper.common.dumper.GTNHDimensionDumper;
@@ -42,7 +41,6 @@ public class NEIConfig implements IConfigureNEI {
                 API.addOption(new GTStructuresDumper());
             }
         }
-        if (CommonProxy.isFRLoaded) API.addOption(new BeeDumper());
         if (CommonProxy.isTiCLoaded) API.addOption(new TICMaterialDumper());
         if (CommonProxy.isTCLoaded) API.addOption(new TC4ResearchDumper());
         if (CommonProxy.isBQLoaded) {
