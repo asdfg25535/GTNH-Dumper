@@ -51,7 +51,7 @@ public class AdvItemPanelDumper extends WikiDumper {
     @Override
     public String[] header() {
         return new String[] { "shortKey", "key", "nbt", "originalName", "translatedName", "tooltips", "tooltipsShift",
-            "tooltipsCtrl", "tooltipsShiftAndCtrl", "mod", "icon", "aspect", "tooltipStats" };
+            "tooltipsCtrl", "tooltipsShiftAndCtrl", "mod", "icon", "aspect", "tooltipStats", "metadata" };
     }
 
     @Override
@@ -126,7 +126,7 @@ public class AdvItemPanelDumper extends WikiDumper {
                 new Object[] { Utils.getItemStackShortKey(stack), Utils.getItemKey(stack), nbt,
                     originalNameMap.get(stack), translatedName, tooltip, tooltips[TOOLTIP_LSHIFT],
                     tooltips[TOOLTIP_LCONTROL], tooltips[TOOLTIP_LSHIFT_AND_LCONTROL], modName, imageName, aspectList,
-                    tooltipStats });
+                    tooltipStats, Utils.getItemMetadata(stack) });
         }
 
         return list;

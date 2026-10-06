@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import net.minecraft.item.ItemStack;
 
@@ -17,6 +18,7 @@ public class RecipeItem {
     public Long amount;
     public Object chance;
     public String nbt;
+    public Map<String, Object> metadata;
     public List<String> tooltip;
 
     public RecipeItem(String key, long amount) {
@@ -53,16 +55,15 @@ public class RecipeItem {
     }
 
     public RecipeItem withNBT(String nbt) {
+        // Metadata from a previous stack must not describe a replacement NBT string.
+        if (!Objects.equals(this.nbt, nbt)) this.metadata = null;
         this.nbt = nbt;
         return this;
     }
 
     public RecipeItem withNBT(ItemStack stack) {
-        if (stack == null) return this;
-        String nbt = Utils.getItemNBT(stack);
-        if (nbt != null) {
-            return withNBT(nbt);
-        }
+        this.nbt = Utils.getItemNBT(stack);
+        this.metadata = Utils.getItemMetadata(stack);
         return this;
     }
 
