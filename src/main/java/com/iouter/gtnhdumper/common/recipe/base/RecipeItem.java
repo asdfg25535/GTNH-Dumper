@@ -8,6 +8,7 @@ import java.util.Objects;
 
 import net.minecraft.item.ItemStack;
 
+import com.iouter.gtnhdumper.common.utils.BeeExportData;
 import com.iouter.gtnhdumper.common.utils.Utils;
 
 public class RecipeItem {
@@ -19,6 +20,7 @@ public class RecipeItem {
     public Object chance;
     public String nbt;
     public Map<String, Object> attributes;
+    public Map<String, Object> beeIdentity;
     public List<String> tooltip;
 
     public RecipeItem(String key, long amount) {
@@ -56,14 +58,19 @@ public class RecipeItem {
 
     public RecipeItem withNBT(String nbt) {
         // Attributes from a previous stack must not describe a replacement NBT string.
-        if (!Objects.equals(this.nbt, nbt)) this.attributes = null;
+        if (!Objects.equals(this.nbt, nbt)) {
+            this.attributes = null;
+            this.beeIdentity = null;
+        }
         this.nbt = nbt;
         return this;
     }
 
     public RecipeItem withNBT(ItemStack stack) {
         this.nbt = Utils.getItemNBT(stack);
-        this.attributes = Utils.getItemAttributes(stack);
+        BeeExportData.ExportData data = Utils.getBeeExportData(stack);
+        this.attributes = data == null ? null : data.attributes;
+        this.beeIdentity = data == null ? null : data.identity;
         return this;
     }
 

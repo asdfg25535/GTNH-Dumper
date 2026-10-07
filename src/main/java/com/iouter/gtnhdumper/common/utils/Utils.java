@@ -83,7 +83,13 @@ public class Utils {
 
     public static Map<String, Object> getItemAttributes(ItemStack stack) {
         if (stack == null || !CommonProxy.isFRLoaded) return null;
-        return BeeExportData.itemAttributes(stack);
+        BeeExportData.ExportData data = BeeExportData.extract(stack);
+        return data == null ? null : data.attributes;
+    }
+
+    public static BeeExportData.ExportData getBeeExportData(ItemStack stack) {
+        if (stack == null || !CommonProxy.isFRLoaded) return null;
+        return BeeExportData.extract(stack);
     }
 
     public static String getFluidNBT(FluidStack stack) {
