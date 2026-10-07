@@ -438,7 +438,7 @@ public class GTMaterialDumper extends WikiDumper {
     }
 
     private static void dumpGTPPMaterial(Material m, Map<String, Map<String, Object>> totalMap) {
-        String name = m.getLocalizedName();
+        String name = m.getDefaultLocalName();
         Map<String, Object> materialMap = getMaterialMap(name, totalMap);
         materialMap.put(NAME, name);
         materialMap.put(DEFAULT_NAME, name);
@@ -476,7 +476,7 @@ public class GTMaterialDumper extends WikiDumper {
             if (m != null) name = fluidPipe.mMaterial.getName();
             else if (fluidPipe instanceof GTPPMTEFluidPipe gtppFluidPipe) {
                 Material tempM = Material.mMaterialCache.get(gtppFluidPipe.pipeStats.defaultLocalName.toLowerCase());
-                if (tempM != null) name = tempM.getLocalizedName();
+                if (tempM != null) name = tempM.getDefaultLocalName();
             }
             materialMap = getMaterialMap(name, totalMap);
             materialMap.put(PIPE, FLUID);
@@ -524,7 +524,7 @@ public class GTMaterialDumper extends WikiDumper {
                     .limit(temp.length - 2)
                     .collect(Collectors.joining("."));
                 Material tempM = Material.mMaterialCache.get(tempS);
-                if (tempM != null) name = tempM.getLocalizedName();
+                if (tempM != null) name = tempM.getDefaultLocalName();
             }
             materialMap = getMaterialMap(name, totalMap);
             materialMap.put(CABLE_VOLTAGE, cable.mVoltage);
