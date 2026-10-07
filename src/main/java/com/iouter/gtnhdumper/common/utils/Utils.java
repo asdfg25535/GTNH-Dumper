@@ -81,6 +81,17 @@ public class Utils {
         return nbt.toString();
     }
 
+    public static Map<String, Object> getItemAttributes(ItemStack stack) {
+        if (stack == null || !CommonProxy.isFRLoaded) return null;
+        BeeExportData.ExportData data = BeeExportData.extract(stack);
+        return data == null ? null : data.attributes;
+    }
+
+    public static BeeExportData.ExportData getBeeExportData(ItemStack stack) {
+        if (stack == null || !CommonProxy.isFRLoaded) return null;
+        return BeeExportData.extract(stack);
+    }
+
     public static String getFluidNBT(FluidStack stack) {
         if (stack == null) return null;
         NBTTagCompound nbt = stack.tag;
@@ -366,13 +377,14 @@ public class Utils {
         Minecraft minecraft = Minecraft.getMinecraft();
         LanguageManager languageManager = minecraft.getLanguageManager();
         Language currentLanguage = languageManager.getCurrentLanguage();
-        languageManager.setCurrentLanguage(new Language("en_US", "US", "English (United States)", false));
-        languageManager.onResourceManagerReload(minecraft.getResourceManager());
-
-        action.run();
-
-        languageManager.setCurrentLanguage(currentLanguage);
-        languageManager.onResourceManagerReload(minecraft.getResourceManager());
+        try {
+            languageManager.setCurrentLanguage(new Language("en_US", "US", "English (United States)", false));
+            languageManager.onResourceManagerReload(minecraft.getResourceManager());
+            action.run();
+        } finally {
+            languageManager.setCurrentLanguage(currentLanguage);
+            languageManager.onResourceManagerReload(minecraft.getResourceManager());
+        }
     }
 
     // Copy from GregTech

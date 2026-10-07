@@ -14,7 +14,11 @@ public class RecipeItemSerializer implements JsonSerializer<RecipeItem> {
 
     @Override
     public JsonElement serialize(RecipeItem src, Type typeOfSrc, JsonSerializationContext context) {
-        boolean hasOnlyKey = src.amount == null && src.chance == null && src.nbt == null && src.tooltip == null;
+        boolean hasOnlyKey = src.amount == null && src.chance == null
+            && src.nbt == null
+            && src.tooltip == null
+            && src.attributes == null
+            && src.beeIdentity == null;
 
         if (hasOnlyKey && src.key != null) {
             return new JsonPrimitive(src.key);
@@ -33,6 +37,12 @@ public class RecipeItemSerializer implements JsonSerializer<RecipeItem> {
         }
         if (src.nbt != null) {
             obj.addProperty("nbt", src.nbt);
+        }
+        if (src.attributes != null) {
+            obj.add("attributes", context.serialize(src.attributes));
+        }
+        if (src.beeIdentity != null) {
+            obj.add("beeIdentity", context.serialize(src.beeIdentity));
         }
         if (src.tooltip != null) {
             obj.addProperty("tooltip", String.join("<br>", src.tooltip));

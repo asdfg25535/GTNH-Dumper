@@ -29,12 +29,11 @@ public class ForestryHandlerRecipe extends BaseHandlerRecipe {
     public List<?> getRecipes(IRecipeHandler handler) {
         List<ForestryRecipe> recipes = new ArrayList<>();
         if (handler instanceof BaseBreedingRecipeHandler breeding) {
-            try {
-                breeding.loadCraftingRecipes(breeding.getRecipeIdent(), (Object) null);
-            } catch (Exception ignored) {
-
-            }
-            breeding.arecipes.stream()
+            // NEI stores shared handler instances. Load into a fresh one so repeated dumps
+            // neither duplicate mutations nor change the recipes currently shown by NEI.
+            BaseBreedingRecipeHandler exportHandler = (BaseBreedingRecipeHandler) breeding.newInstance();
+            exportHandler.loadCraftingRecipes(exportHandler.getRecipeIdent(), (Object) null);
+            exportHandler.arecipes.stream()
                 .filter(BaseBreedingRecipeHandler.CachedBreedingRecipe.class::isInstance)
                 .map(BaseBreedingRecipeHandler.CachedBreedingRecipe.class::cast)
                 .forEachOrdered(
