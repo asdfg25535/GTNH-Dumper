@@ -67,14 +67,16 @@ final class ExportOutput {
         return new ExportOutput(run, output, latest);
     }
 
-    /** Clear after NEI preparation succeeds; cached images remain available for data-only refreshes. */
-    void clearData(boolean layoutsOnly, boolean imagesOnly, boolean smoke) throws IOException {
-        if (!latest || imagesOnly) return;
+    /** Clear the selected task's data after preparation; cached images remain available for data-only refreshes. */
+    void clearData(ExportOptions options) throws IOException {
+        if (!latest || options.imagesOnly) return;
         checkDirectories(outputDirectory);
         List<Path> deletionOrder = new ArrayList<>();
-        if (layoutsOnly) {
+        if (options.researchOnly) {
+            collectForDeletion(outputDirectory.resolve("tc4research.json"), false, deletionOrder);
+        } else if (options.layoutsOnly) {
             collectForDeletion(outputDirectory.resolve("nei-layouts"), true, deletionOrder);
-        } else if (smoke) {
+        } else if (options.smoke) {
             collectForDeletion(outputDirectory.resolve("ticmaterial.json"), false, deletionOrder);
         } else {
             collectForDeletion(outputDirectory.resolve("recipes"), true, deletionOrder);

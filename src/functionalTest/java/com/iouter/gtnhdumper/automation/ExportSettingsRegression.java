@@ -50,7 +50,8 @@ public final class ExportSettingsRegression {
             check(
                 !defaults.has("runId") && !defaults.has("imageKeys") && !defaults.has("imageMetadata"),
                 "Generated IDs and optional filters must stay absent");
-            for (String flag : new String[] { "keepWorld", "smoke", "layoutsOnly", "imagesOnly", "imageDiagnostics" }) {
+            for (String flag : new String[] { "keepWorld", "smoke", "layoutsOnly", "imagesOnly", "researchOnly",
+                "imageDiagnostics" }) {
                 check(
                     !defaults.get(flag)
                         .getAsBoolean(),
@@ -116,9 +117,17 @@ public final class ExportSettingsRegression {
         ExportOptions filteredImages = new ExportOptions(
             gson.fromJson("{\"imagesOnly\":true,\"modFilter\":\"exampleaddon\"}", JsonObject.class));
         check(!filteredImages.noImages, "Filtered image-only exports retain capture");
+        ExportOptions research = new ExportOptions(
+            gson.fromJson(
+                "{\"researchOnly\":true,\"noImages\":false,\"modFilter\":\"exampleaddon\"}",
+                JsonObject.class));
+        check(
+            research.researchOnly && research.noImages,
+            "Research-only export supports mod filtering and skips images");
         for (String invalid : new String[] { "{\"outputMode\":\"../elsewhere\"}",
             "{\"imagesOnly\":true,\"layoutsOnly\":true}", "{\"imagesOnly\":true,\"smoke\":true}",
-            "{\"modFilter\":\"exampleaddon\",\"layoutsOnly\":true}",
+            "{\"researchOnly\":true,\"imagesOnly\":true}", "{\"researchOnly\":true,\"layoutsOnly\":true}",
+            "{\"researchOnly\":true,\"smoke\":true}", "{\"modFilter\":\"exampleaddon\",\"layoutsOnly\":true}",
             "{\"modFilter\":\"exampleaddon\",\"smoke\":true}" }) {
             try {
                 new ExportOptions(gson.fromJson(invalid, JsonObject.class));

@@ -156,3 +156,22 @@ val checkExportOutput by tasks.registering(JavaExec::class) {
 }
 
 tasks.check.configure { dependsOn(checkExportOutput) }
+
+val checkResearchSources by tasks.registering(JavaExec::class) {
+    group = "verification"
+    description = "Checks research registration ownership and mod filtering without addon mods or a running game."
+    classpath(configurations.compileClasspath, functionalTest.runtimeClasspath, sourceSets.main.get().output, sourceSets.patchedMc.get().output)
+    mainClass.set("com.iouter.gtnhdumper.common.utils.ResearchSourcesRegression")
+}
+
+val checkResearchMixinLoader by tasks.registering(JavaExec::class) {
+    group = "verification"
+    description = "Checks the optional research hook with no Thaumcraft classes on the runtime classpath."
+    classpath(functionalTest.output, sourceSets.main.get().output,
+        configurations.compileClasspath.get().filter { it.name.startsWith("unimixins-") })
+    mainClass.set("com.iouter.gtnhdumper.ResearchMixinLoaderRegression")
+    dependsOn(tasks.jar)
+    args(tasks.jar.get().archiveFile.get().asFile.absolutePath)
+}
+
+tasks.check.configure { dependsOn(checkResearchSources, checkResearchMixinLoader) }

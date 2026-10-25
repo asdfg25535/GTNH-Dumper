@@ -21,13 +21,18 @@
 - 配方：按 **原始配方来源** 筛选，目前使用 `GTRecipe.owners` 的第一条记录。
   来源表示最初注册该配方的 Mod。
   匹配后保留完整配方，包括其他 Mod 的原料和产物，并导出 `sourceMod` 便于核对。
+- 神秘时代研究：在研究成功注册时记录 FML 生命周期事件的 Mod ID，导出为 `sourceMod`。
+  同一分类可以包含多个 Mod 的研究；修改已注册研究或重复注册保留首次来源。
+  生命周期上下文缺失时，全量导出保留该研究并省略 `sourceMod`，Mod 筛选跳过该项。
 
 GT 配方需要在加载配方前开启 `config/GregTech/Client.cfg` 的 `NEIRecipeOwner=true`，修改后重启游戏。
 运行时打开该选项无法补回此前丢失的来源记录。缺少来源的 GT 配方、普通 NEI 配方以及 EOH/EEC
 等缺少来源记录的自定义配方，筛选时跳过并在 `recipes_filter_report.json` 中列出原因，
 游戏内也会显示提示。清空筛选仍可全量导出这些配方。
 
-研究、任务、任务线、TiC 材料、矿脉及维度等没有可靠逐项 Mod 归属的数据，在开启筛选时会提示并停止该项导出。
+任务、任务线、TiC 材料、矿脉及维度等没有可靠逐项 Mod 归属的数据，在开启筛选时会提示并停止该项导出。
+
+研究来源捕获使用 UniMixins 的延迟加载入口，仅在安装 Thaumcraft 时启用；运行 Dumper 需安装 UniMixins。
 
 ## 配方专用物品变体
 
@@ -95,7 +100,7 @@ GT 配方需要在加载配方前开启 `config/GregTech/Client.cfg` 的 `NEIRec
 
 筛选复用手动导出的归属规则，保留命中配方中的全部跨 Mod 原料与产物。
 物品与流体 JSON 只包含该 Mod 的条目，处理附属数据时与基础包的物品库组合使用。
-研究、任务和矿脉等缺少逐项归属的数据会列入 `status.json` 的 `skipped`，其余任务继续完成。
+任务和矿脉等缺少逐项归属的数据会列入 `status.json` 的 `skipped`，其余任务继续完成。
 配方来源缺失的分类另见 `recipes_filter_report.json`；GT 配方的来源采集需要提前开启 `NEIRecipeOwner`。
 `modFilter` 只控制本次自动会话，手动 NEI 筛选设置保持原值。
 
@@ -129,6 +134,17 @@ GT 配方需要在加载配方前开启 `config/GregTech/Client.cfg` 的 `NEIRec
 配方物品的附加提示使用 `tooltip` 字段，通过 `RecipeItem.withTooltip(...)` 追加。
 普通配方物品序列化为以 `<br>` 连接的字符串；专用记录和流体槽也可保留提示列表。
 它与物品数据库的 `tooltips` 字段分开。神秘时代配方的 `research` 保持列表形式。
+
+### 只更新研究数据
+
+设置 `researchOnly: true` 只运行神秘时代研究导出，支持同时指定 `modFilter`。
+它使用已注册的研究表，跳过物品扫描、图片导出与玩家研究解锁；仍沿用自动建档、退出和存档清理流程。
+此模式与 `imagesOnly`、`layoutsOnly`、`smoke` 互斥，要求安装 Thaumcraft。
+`outputMode: "latest"` 只清理并重新写入 `tc4research.json`，保留其他导出数据。
+
+```json
+{"enabled":true,"researchOnly":true,"noImages":true,"exitGame":true}
+```
 
 ### 定向图片与时钟动画
 

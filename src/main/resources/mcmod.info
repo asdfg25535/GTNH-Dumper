@@ -13,8 +13,8 @@
 		"logoFile": "",
 		"screenshots": [],
 		"parent": "",
-		"requiredMods": [],
-		"dependencies": [],
+		"requiredMods": ["unimixins"],
+		"dependencies": ["unimixins"],
 		"dependants": [],
 		"useDependencyInformation": true
 	}]

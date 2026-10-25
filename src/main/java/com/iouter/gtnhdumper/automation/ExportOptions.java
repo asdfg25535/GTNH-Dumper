@@ -10,6 +10,7 @@ final class ExportOptions {
     final boolean smoke;
     final boolean layoutsOnly;
     final boolean imagesOnly;
+    final boolean researchOnly;
     final boolean noImages;
 
     ExportOptions(JsonObject request) {
@@ -24,11 +25,15 @@ final class ExportOptions {
         smoke = flag(request, "smoke", false);
         layoutsOnly = flag(request, "layoutsOnly", false);
         imagesOnly = flag(request, "imagesOnly", false);
+        researchOnly = flag(request, "researchOnly", false);
+        if (researchOnly && (imagesOnly || layoutsOnly || smoke)) {
+            throw new IllegalArgumentException("researchOnly excludes imagesOnly/layoutsOnly/smoke");
+        }
         if (imagesOnly && (layoutsOnly || smoke)) {
             throw new IllegalArgumentException("imagesOnly excludes layoutsOnly/smoke");
         }
         // These modes explicitly request image capture, including with the generated noImages=true default.
-        noImages = flag(request, "noImages", true) && !imagesOnly && !layoutsOnly;
+        noImages = researchOnly || flag(request, "noImages", true) && !imagesOnly && !layoutsOnly;
         if (!modFilter.isEmpty() && (layoutsOnly || smoke)) {
             throw new IllegalArgumentException(
                 "Mod filtering requires a data or imagesOnly export; layouts and smoke data have no recipe-owner filter");

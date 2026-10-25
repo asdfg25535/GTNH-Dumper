@@ -134,6 +134,9 @@ public final class ExportSession {
             .resolve("saves")
             .resolve("Dumper-" + runId);
         options = new ExportOptions(request);
+        if (options.researchOnly && !CommonProxy.isTCLoaded) {
+            throw new IllegalArgumentException("researchOnly requires Thaumcraft");
+        }
         filter = ModFilter.resolve(options.modFilter);
         imageDiagnostics = request.has("imageDiagnostics") && request.get("imageDiagnostics")
             .getAsBoolean();
@@ -235,6 +238,7 @@ public final class ExportSession {
             defaults.addProperty("smoke", false);
             defaults.addProperty("layoutsOnly", false);
             defaults.addProperty("imagesOnly", false);
+            defaults.addProperty("researchOnly", false);
             defaults.addProperty("imageDiagnostics", false);
             // Image capture is opt-in; runId is generated separately for each world, even with a fixed output path.
             Files.createDirectories(path.getParent());
@@ -326,7 +330,7 @@ public final class ExportSession {
                 .executeCommand(server, "gamerule doMobSpawning false");
             server.getCommandManager()
                 .executeCommand(server, "gamerule doDaylightCycle false");
-            if (CommonProxy.isTCLoaded) {
+            if (CommonProxy.isTCLoaded && !options.researchOnly) {
                 Item book = GameRegistry.findItem("Thaumcraft", "ItemThaumonomicon");
                 if (book == null) throw new IllegalStateException("Thaumcraft cheat book missing");
                 book.onItemRightClick(new ItemStack(book, 1, 42), player.worldObj, player);
@@ -405,16 +409,21 @@ public final class ExportSession {
             if (mc.theWorld == null || mc.thePlayer == null) return;
             // Closing the cheat-book GUI also keeps the integrated server ticking while readiness is checked.
             if (mc.currentScreen != null) mc.displayGuiScreen(null);
-            if (!prepared || !ItemList.loadFinished || GuiUsageRecipe.usagehandlers.isEmpty()) return;
+            if (!prepared) return;
+            // Research is registered during mod loading; its export is independent of NEI and player unlocks.
+            if (!options.researchOnly && (!ItemList.loadFinished || GuiUsageRecipe.usagehandlers.isEmpty())) return;
             if (stage.equals("WAIT_WORLD")) {
                 for (String key : researchKeys) {
                     if (!ThaumcraftApiHelper.isResearchComplete(mc.thePlayer.getCommandSenderName(), key)) return;
                 }
                 // Allow pending client packets/render initialization to settle after explicit readiness checks.
                 if (++readyTicks < 40) return;
-                directories.clearData(options.layoutsOnly, options.imagesOnly, options.smoke);
+                directories.clearData(options);
                 planTasks();
-                status("EXPORTING", "World prepared; NEI and research are ready");
+                status(
+                    "EXPORTING",
+                    options.researchOnly ? "World prepared; research registry is ready"
+                        : "World prepared; NEI and research are ready");
             }
             if (nextTask < tasks.size()) {
                 ExportTask task = tasks.get(nextTask);
@@ -588,6 +597,10 @@ public final class ExportSession {
     }
 
     private void planTasks() {
+        if (options.researchOnly) {
+            add("tc4research", new TC4ResearchDumper(), 0);
+            return;
+        }
         if (options.layoutsOnly) {
             tasks.add(
                 new ExportTask(
@@ -642,6 +655,7 @@ public final class ExportSession {
         result.addProperty("smoke", options.smoke);
         result.addProperty("layoutsOnly", options.layoutsOnly);
         result.addProperty("imagesOnly", options.imagesOnly);
+        result.addProperty("researchOnly", options.researchOnly);
         result.addProperty("outputMode", options.outputMode);
         result.addProperty("noImages", options.noImages);
         result.addProperty("modFilter", filter.modId());

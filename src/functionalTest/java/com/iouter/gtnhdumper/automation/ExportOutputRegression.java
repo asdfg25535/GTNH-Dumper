@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import com.google.gson.JsonObject;
 import com.iouter.gtnhdumper.common.utils.ModFilter;
 
 /** Filesystem checks use synthetic mod IDs and require no installed addons or running game. */
@@ -53,14 +54,14 @@ public final class ExportOutputRegression {
         check(
             repeated.outputDirectory.equals(all.outputDirectory),
             "Latest output reuses its directory across run IDs");
-        repeated.clearData(false, false, false);
+        repeated.clearData(options());
         check(!Files.exists(oldRecipe) && !Files.exists(oldStructure) && !Files.exists(oldItems), "Old data removed");
         for (Path preserved : new Path[] { image, iconIndex, imageMap, unrelated }) {
             check(Arrays.equals(Files.readAllBytes(preserved), imageBytes), "Retained file bytes: " + preserved);
         }
         check(Files.exists(recipeA) && Files.exists(recipeB), "Full refresh preserves each filtered output");
         Path newRecipe = write(all.outputDirectory, "recipes/new.json", new byte[] { 9 });
-        addonA.clearData(false, false, false);
+        addonA.clearData(options());
         check(!Files.exists(recipeA), "Filtered refresh removes its stale recipe files");
         check(Files.exists(newRecipe) && Files.exists(recipeB), "Filtered refresh preserves full and other mod data");
     }
@@ -75,7 +76,7 @@ public final class ExportOutputRegression {
             first.outputDirectory.equals(prepared.resolve("dumps/filtered/example%002emod")),
             "Timestamped filtered data stays under dumps");
         Path data = write(first.outputDirectory, "recipes/retained.json", new byte[] { 1 });
-        first.clearData(false, false, false);
+        first.clearData(options());
         check(Files.exists(data), "Timestamped snapshots are never cleared");
         write(first.runDirectory, "request.json", new byte[] { 3 });
         expectRejected(
@@ -105,18 +106,24 @@ public final class ExportOutputRegression {
         Path layout = write(output.outputDirectory, "nei-layouts/layouts.json", new byte[] { 2 });
         Path materials = write(output.outputDirectory, "ticmaterial.json", new byte[] { 3 });
         Path image = write(output.outputDirectory, "icons/a.png", new byte[] { 4 });
-        output.clearData(false, true, false);
+        Path research = write(output.outputDirectory, "tc4research.json", new byte[] { 5 });
+        output.clearData(options("researchOnly"));
+        check(!Files.exists(research), "Research-only refresh clears the research table");
+        check(
+            Files.exists(recipe) && Files.exists(layout) && Files.exists(materials) && Files.exists(image),
+            "Research refresh preserves other data and images");
+        output.clearData(options("imagesOnly"));
         check(Files.exists(recipe) && Files.exists(layout) && Files.exists(materials), "Image-only refresh keeps data");
-        output.clearData(true, false, false);
+        output.clearData(options("layoutsOnly"));
         check(!Files.exists(layout), "Layout-only refresh clears layouts");
         check(
             Files.exists(recipe) && Files.exists(materials) && Files.exists(image),
             "Layout refresh stays in its scope");
         layout = write(output.outputDirectory, "nei-layouts/layouts.json", new byte[] { 2 });
-        output.clearData(false, false, true);
+        output.clearData(options("smoke"));
         check(!Files.exists(materials), "Smoke refresh clears its material JSON");
         check(Files.exists(recipe) && Files.exists(layout) && Files.exists(image), "Smoke refresh stays in its scope");
-        output.clearData(false, false, false);
+        output.clearData(options());
         check(
             Files.exists(layout) && Files.exists(image),
             "Data refresh preserves separately exported layouts and icons");
@@ -141,7 +148,7 @@ public final class ExportOutputRegression {
         Path items = write(output.outputDirectory, "advitempanel.json", new byte[] { 5 });
         Path redirectedRecipe = output.outputDirectory.resolve("recipes/redirect");
         Files.createSymbolicLink(redirectedRecipe, outside);
-        expectRejected(() -> output.clearData(false, false, false), "Redirected recipe descendant accepted");
+        expectRejected(() -> output.clearData(options()), "Redirected recipe descendant accepted");
         check(Files.exists(oldRecipe) && Files.exists(items), "Preflight preserves old data when a tree is rejected");
         check(Files.size(preserved) == 3, "Redirect target preserved");
         Files.delete(redirectedRecipe);
@@ -149,6 +156,12 @@ public final class ExportOutputRegression {
         Files.createSymbolicLink(metadata, preserved);
         expectRejected(() -> ExportOutput.create(game, "retry", true, filter("")), "Redirected metadata accepted");
         Files.delete(metadata);
+    }
+
+    private static ExportOptions options(String... modes) {
+        JsonObject request = new JsonObject();
+        for (String mode : modes) request.addProperty(mode, true);
+        return new ExportOptions(request);
     }
 
     private static ModFilter filter(String input) {
