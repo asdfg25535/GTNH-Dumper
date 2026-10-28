@@ -96,3 +96,82 @@ tasks.named<RunMinecraftTask>("runClient").configure {
     dependsOn(functionalTest.jarTaskName)
     classpath(configurations.named(functionalTest.runtimeClasspathConfigurationName), tasks.named(functionalTest.jarTaskName))
 }
+
+val checkRecipeItemVariants by tasks.registering(JavaExec::class) {
+    group = "verification"
+    description = "Checks recipe item copies, count normalization and structural NBT identity."
+    classpath(functionalTest.runtimeClasspath, sourceSets.main.get().output, sourceSets.patchedMc.get().output)
+    mainClass.set("com.iouter.gtnhdumper.RecipeItemVariantsRegression")
+}
+
+tasks.check.configure {
+    dependsOn(checkRecipeItemVariants)
+}
+
+val checkCraftingGrid by tasks.registering(JavaExec::class) {
+    group = "verification"
+    description = "Checks shaped crafting coordinates, empty cells and input-order invariance."
+    classpath(functionalTest.runtimeClasspath, sourceSets.main.get().output, sourceSets.patchedMc.get().output)
+    mainClass.set("com.iouter.gtnhdumper.CraftingGridRegression")
+}
+
+tasks.check.configure {
+    dependsOn(checkCraftingGrid)
+}
+
+val checkExportWorldCleanup by tasks.registering(JavaExec::class) {
+    group = "verification"
+    description = "Checks export world cleanup isolation and redirected path rejection without launching Minecraft."
+    classpath(functionalTest.runtimeClasspath, sourceSets.main.get().output, sourceSets.patchedMc.get().output)
+    mainClass.set("com.iouter.gtnhdumper.automation.ExportWorldCleanupRegression")
+}
+
+tasks.check.configure {
+    dependsOn(checkExportWorldCleanup)
+}
+
+val checkTimedIconFrames by tasks.registering(JavaExec::class) {
+    group = "verification"
+    description = "Checks icon render profiles and timed frame dimensions and ordering without launching Minecraft."
+    classpath(configurations.compileClasspath, functionalTest.runtimeClasspath, sourceSets.main.get().output, sourceSets.patchedMc.get().output)
+    mainClass.set("com.iouter.gtnhdumper.common.dumper.TimedIconFramesRegression")
+}
+
+tasks.check.configure { dependsOn(checkTimedIconFrames) }
+
+val checkExportSettings by tasks.registering(JavaExec::class) {
+    group = "verification"
+    description = "Checks first-launch export configuration and restoration of temporary client settings."
+    classpath(configurations.compileClasspath, functionalTest.runtimeClasspath, sourceSets.main.get().output, sourceSets.patchedMc.get().output)
+    mainClass.set("com.iouter.gtnhdumper.automation.ExportSettingsRegression")
+}
+
+tasks.check.configure { dependsOn(checkExportSettings) }
+
+val checkExportOutput by tasks.registering(JavaExec::class) {
+    group = "verification"
+    description = "Checks repeated autorun output, image retention and mod scope isolation without launching Minecraft."
+    classpath(configurations.compileClasspath, functionalTest.runtimeClasspath, sourceSets.main.get().output, sourceSets.patchedMc.get().output)
+    mainClass.set("com.iouter.gtnhdumper.automation.ExportOutputRegression")
+}
+
+tasks.check.configure { dependsOn(checkExportOutput) }
+
+val checkResearchSources by tasks.registering(JavaExec::class) {
+    group = "verification"
+    description = "Checks research registration ownership and mod filtering without addon mods or a running game."
+    classpath(configurations.compileClasspath, functionalTest.runtimeClasspath, sourceSets.main.get().output, sourceSets.patchedMc.get().output)
+    mainClass.set("com.iouter.gtnhdumper.common.utils.ResearchSourcesRegression")
+}
+
+val checkResearchMixinLoader by tasks.registering(JavaExec::class) {
+    group = "verification"
+    description = "Checks the optional research hook with no Thaumcraft classes on the runtime classpath."
+    classpath(functionalTest.output, sourceSets.main.get().output,
+        configurations.compileClasspath.get().filter { it.name.startsWith("unimixins-") })
+    mainClass.set("com.iouter.gtnhdumper.ResearchMixinLoaderRegression")
+    dependsOn(tasks.jar)
+    args(tasks.jar.get().archiveFile.get().asFile.absolutePath)
+}
+
+tasks.check.configure { dependsOn(checkResearchSources, checkResearchMixinLoader) }

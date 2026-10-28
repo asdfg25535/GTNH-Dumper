@@ -8,6 +8,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 
+import com.iouter.gtnhdumper.automation.ExportSession;
 import com.iouter.gtnhdumper.common.base.ModFilterOption;
 
 import codechicken.core.CommonUtils;
@@ -54,18 +55,28 @@ public final class ModFilter {
     }
 
     public static ModFilter current() {
+        if (ExportSession.isExporting()) return ExportSession.modFilter();
         String input = ModFilterOption.INSTANCE.value();
         if (cachedFilter != null && java.util.Objects.equals(input, cachedInput)) return cachedFilter;
+        ModFilter filter = resolve(input);
+        cachedInput = input;
+        cachedFilter = filter;
+        return filter;
+    }
+
+    /** Resolve manual and autorun selections against the same loaded-mod names and IDs. */
+    public static ModFilter resolve(String input) {
         Map<String, String> mods = new LinkedHashMap<>();
         mods.put("minecraft", "Minecraft");
         for (ModContainer mod : Loader.instance()
             .getModList()) {
             mods.put(mod.getModId(), mod.getName());
         }
-        ModFilter filter = new ModFilter(input, mods);
-        cachedInput = input;
-        cachedFilter = filter;
-        return filter;
+        return new ModFilter(input, mods);
+    }
+
+    public String modId() {
+        return modId;
     }
 
     public boolean isActive() {
@@ -147,6 +158,7 @@ public final class ModFilter {
     }
 
     public File outputFile(String relativePath) {
+        if (ExportSession.isExporting()) return new File(ExportSession.outputDirectory(), relativePath);
         return new File(CommonUtils.getMinecraftDir(), "dumps/" + relativeDirectory() + relativePath);
     }
 }

@@ -15,6 +15,8 @@ import net.minecraft.util.StatCollector;
 
 import com.iouter.gtnhdumper.CommonProxy;
 import com.iouter.gtnhdumper.common.base.WikiDumper;
+import com.iouter.gtnhdumper.common.utils.ModFilter;
+import com.iouter.gtnhdumper.common.utils.ResearchSources;
 
 import thaumcraft.api.ThaumcraftApi;
 import thaumcraft.api.aspects.Aspect;
@@ -27,6 +29,11 @@ public class TC4ResearchDumper extends WikiDumper {
 
     public TC4ResearchDumper() {
         super("tools.dump.gtnhdumper.tc4research");
+    }
+
+    @Override
+    public boolean supportsModFilter() {
+        return true;
     }
 
     @Override
@@ -43,21 +50,25 @@ public class TC4ResearchDumper extends WikiDumper {
     public String[] header() {
         return new String[] { "Name", "Key", "Category", "Complexity", "Warp", "Parents", "ParentsHidden",
             "ItemTriggers", "EntityTriggers", "AspectTriggers", "KillerTriggers", "Siblings", "IsSpecial",
-            "IsSecondary", "IsRound", "IsStub", "IsVirtual", "IsConcealed", "IsHidden", "IsLost", "IsAutoUnlock" };
+            "IsSecondary", "IsRound", "IsStub", "IsVirtual", "IsConcealed", "IsHidden", "IsLost", "IsAutoUnlock",
+            "sourceMod" };
     }
 
     @Override
     public Iterable<Object[]> dumpObject(int mode) {
         LinkedList<Object[]> list = new LinkedList<>();
+        ModFilter filter = ModFilter.current();
         for (ResearchCategoryList r : ResearchCategories.researchCategories.values()) {
             for (ResearchItem m : r.research.values()) {
+                String source = ResearchSources.sourceOf(m);
+                if (!filter.matchesMod(source)) continue;
                 list.add(
                     new Object[] { m.getName(), m.key, ResearchCategories.getCategoryName(m.category),
                         m.getComplexity(), ThaumcraftApi.getWarp(m.key), m.parents, m.parentsHidden,
                         getItemStacksName(m.getItemTriggers()), getEnTitiesName(m.getEntityTriggers()),
                         getAspectsName(m.getAspectTriggers()), getKillerTrigger(m), m.siblings, m.isSpecial(),
                         m.isSecondary(), m.isRound(), m.isStub(), m.isVirtual(), m.isConcealed(), m.isHidden(),
-                        m.isLost(), m.isAutoUnlock() });
+                        m.isLost(), m.isAutoUnlock(), source });
             }
         }
         return list;
